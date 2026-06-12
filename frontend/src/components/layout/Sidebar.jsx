@@ -29,7 +29,7 @@ const navigation = [
   {
     label: 'Trabajo',
     items: [
-      { label: 'Espacios', icon: FolderOpen },
+      { label: 'Espacios', to: '/espacios', icon: FolderOpen },
       { label: 'Proyectos', to: '/proyectos', icon: FolderKanban },
       { label: 'Tablero Kanban', to: '/kanban', icon: Gauge },
     ],

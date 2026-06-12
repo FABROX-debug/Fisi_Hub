@@ -15,7 +15,7 @@
 | 0      | Preparación del MVP             | ✅ Completo  | —          |
 | 1      | Sistema de diseño y layout base | ✅ Completo  | Sprint 0   |
 | 2      | Autenticación y usuarios        | ✅ Completo  | Sprint 1   |
-| 3      | Espacios de trabajo y proyectos | ⏳ Pendiente | Sprint 2   |
+| 3      | Espacios de trabajo y proyectos | ✅ Completo  | Sprint 2   |
 | 4      | Tareas                          | ⏳ Pendiente | Sprint 3   |
 | 5      | Kanban básico                   | ⏳ Pendiente | Sprint 4   |
 | 6      | Dashboard con datos reales      | ⏳ Pendiente | Sprint 5   |
@@ -233,7 +233,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 ## SPRINT 3 — Espacios de Trabajo y Proyectos
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado  
 **Commit esperado:** `git commit -m "Sprint 3: espacios de trabajo y proyectos CRUD"`  
 **PostgreSQL requerido:** ✅ SÍ
 

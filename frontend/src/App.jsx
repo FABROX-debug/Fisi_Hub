@@ -18,6 +18,7 @@ import Register from './pages/Register'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import Tasks from './pages/Tasks'
+import Workspaces from './pages/Workspaces'
 import useAuthStore from './store/authStore'
 
 function PublicOnlyRoute() {
@@ -53,6 +54,7 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/espacios" element={<Workspaces />} />
           <Route path="/proyectos" element={<Projects />} />
           <Route path="/tareas" element={<Tasks />} />
           <Route path="/kanban" element={<Kanban />} />

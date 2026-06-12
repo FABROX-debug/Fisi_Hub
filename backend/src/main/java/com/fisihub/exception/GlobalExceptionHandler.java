@@ -28,6 +28,18 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, exception.getMessage(), Map.of());
     }
 
+    @ExceptionHandler(ForbiddenOperationException.class)
+    ResponseEntity<ApiErrorResponse> handleForbidden(
+            ForbiddenOperationException exception) {
+        return build(HttpStatus.FORBIDDEN, exception.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    ResponseEntity<ApiErrorResponse> handleBusinessRule(
+            BusinessRuleException exception) {
+        return build(HttpStatus.BAD_REQUEST, exception.getMessage(), Map.of());
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     ResponseEntity<ApiErrorResponse> handleAuthentication(
             AuthenticationException exception) {

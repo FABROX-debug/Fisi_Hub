@@ -5,11 +5,10 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 2: autenticacion y usuarios con registro, login, JWT, roles basicos y
-rutas frontend protegidas.
+Sprint 3: espacios de trabajo y proyectos conectados al usuario autenticado.
 
-Todavia no se han implementado espacios de trabajo, CRUD de proyectos o tareas,
-Kanban funcional, reportes reales, notificaciones ni panel administrativo.
+Todavia no se han implementado tareas, Kanban funcional, comentarios, reportes
+reales, notificaciones ni panel administrativo.
 
 ## Stack
 
@@ -32,6 +31,11 @@ Kanban funcional, reportes reales, notificaciones ni panel administrativo.
 - Restauracion de sesion mediante `GET /api/auth/me`.
 - Rutas privadas y cierre de sesion.
 - Roles del sistema: `ADMIN`, `LIDER` y `MIEMBRO`.
+- CRUD de espacios de trabajo con membresia automatica del creador.
+- CRUD de proyectos asociados a espacios.
+- Estados y prioridades de proyecto.
+- Cards de proyecto con fechas, badges y avance inicial en `0%`.
+- Filtros frontend por estado.
 
 ## Rutas frontend
 
@@ -41,6 +45,7 @@ Kanban funcional, reportes reales, notificaciones ni panel administrativo.
 | `/login` | Inicio de sesion |
 | `/register` | Registro |
 | `/dashboard` | Dashboard temporal protegido |
+| `/espacios` | Espacios de trabajo del usuario |
 | `/proyectos` | Proyectos |
 | `/tareas` | Mis tareas |
 | `/kanban` | Tablero Kanban |
@@ -110,8 +115,49 @@ Respuesta esperada:
 }
 ```
 
-Durante el Sprint 2 PostgreSQL debe estar activo. Hibernate crea o actualiza
-temporalmente las tablas `usuario`, `rol` y `usuario_rol`.
+Durante el Sprint 3 PostgreSQL debe estar activo. Hibernate crea o actualiza
+temporalmente las tablas de usuarios, espacios, membresias y proyectos.
+
+## Endpoints de Sprint 3
+
+Todos requieren `Authorization: Bearer <token>`.
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `GET` | `/api/espacios` | Lista espacios del usuario |
+| `POST` | `/api/espacios` | Crea un espacio |
+| `GET` | `/api/espacios/{id}` | Obtiene un espacio accesible |
+| `PUT` | `/api/espacios/{id}` | Edita un espacio propio |
+| `DELETE` | `/api/espacios/{id}` | Elimina un espacio propio |
+| `GET` | `/api/espacios/{id}/proyectos` | Lista proyectos del espacio |
+| `GET` | `/api/proyectos` | Lista proyectos del usuario |
+| `POST` | `/api/proyectos` | Crea un proyecto |
+| `GET` | `/api/proyectos/{id}` | Obtiene un proyecto accesible |
+| `PUT` | `/api/proyectos/{id}` | Edita un proyecto liderado |
+| `DELETE` | `/api/proyectos/{id}` | Elimina un proyecto liderado |
+
+Ejemplo de creacion de espacio:
+
+```powershell
+$headers = @{ Authorization = "Bearer $($login.token)" }
+$espacio = Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/espacios `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body '{"nombre":"Arquitectura de Software","color":"#6D28D9"}'
+```
+
+Ejemplo de creacion de proyecto:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/proyectos `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body "{`"nombre`":`"Sistema FISIHUB`",`"espacioId`":$($espacio.id),`"estado`":`"PLANIFICADO`",`"prioridad`":`"ALTA`"}"
+```
 
 ## Probar autenticacion
 

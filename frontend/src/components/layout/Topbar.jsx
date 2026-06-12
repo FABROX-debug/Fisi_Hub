@@ -6,6 +6,7 @@ import useAuthStore from '../../store/authStore'
 const sectionTitles = {
   '/': 'Inicio',
   '/dashboard': 'Dashboard',
+  '/espacios': 'Espacios de trabajo',
   '/proyectos': 'Proyectos',
   '/tareas': 'Mis Tareas',
   '/kanban': 'Tablero Kanban',
