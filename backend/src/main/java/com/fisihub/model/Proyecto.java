@@ -65,6 +65,9 @@ public class Proyecto {
     @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MiembroProyecto> miembros = new HashSet<>();
 
+    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Tarea> tareas = new HashSet<>();
+
     protected Proyecto() {
     }
 
@@ -110,6 +113,10 @@ public class Proyecto {
 
     public void agregarMiembro(Usuario usuario, RolProyecto rol) {
         miembros.add(new MiembroProyecto(this, usuario, rol));
+    }
+
+    public void actualizarPorcentajeAvance(int porcentajeAvance) {
+        this.porcentajeAvance = Math.min(100, Math.max(0, porcentajeAvance));
     }
 
     public Long getId() {
@@ -158,5 +165,9 @@ public class Proyecto {
 
     public Set<MiembroProyecto> getMiembros() {
         return miembros;
+    }
+
+    public Set<Tarea> getTareas() {
+        return tareas;
     }
 }

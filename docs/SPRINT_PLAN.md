@@ -16,7 +16,7 @@
 | 1      | Sistema de diseño y layout base | ✅ Completo  | Sprint 0   |
 | 2      | Autenticación y usuarios        | ✅ Completo  | Sprint 1   |
 | 3      | Espacios de trabajo y proyectos | ✅ Completo  | Sprint 2   |
-| 4      | Tareas                          | ⏳ Pendiente | Sprint 3   |
+| 4      | Tareas                          | ✅ Completo  | Sprint 3   |
 | 5      | Kanban básico                   | ⏳ Pendiente | Sprint 4   |
 | 6      | Dashboard con datos reales      | ⏳ Pendiente | Sprint 5   |
 | 7      | Miembros y comentarios          | ⏳ Pendiente | Sprint 6   |
@@ -304,7 +304,7 @@ cd backend && ./mvnw test
 
 ## SPRINT 4 — Tareas
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado  
 **Commit esperado:** `git commit -m "Sprint 4: gestión de tareas CRUD"`  
 **PostgreSQL requerido:** ✅ SÍ
 

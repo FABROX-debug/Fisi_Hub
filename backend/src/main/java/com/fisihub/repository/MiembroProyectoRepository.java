@@ -2,6 +2,7 @@ package com.fisihub.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.fisihub.model.MiembroProyecto;
@@ -12,4 +13,9 @@ public interface MiembroProyectoRepository
     Optional<MiembroProyecto> findByProyectoIdAndUsuarioCorreoIgnoreCase(
             Long proyectoId,
             String correo);
+
+    @EntityGraph(attributePaths = {"usuario"})
+    Optional<MiembroProyecto> findByProyectoIdAndUsuarioId(
+            Long proyectoId,
+            Long usuarioId);
 }

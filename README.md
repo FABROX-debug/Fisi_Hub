@@ -5,10 +5,11 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 3: espacios de trabajo y proyectos conectados al usuario autenticado.
+Sprint 4: gestion de tareas dentro de proyectos con responsables, estados,
+prioridades y recalculo del avance.
 
-Todavia no se han implementado tareas, Kanban funcional, comentarios, reportes
-reales, notificaciones ni panel administrativo.
+Todavia no se han implementado Kanban funcional, comentarios, reportes reales,
+notificaciones ni panel administrativo.
 
 ## Stack
 
@@ -36,6 +37,10 @@ reales, notificaciones ni panel administrativo.
 - Estados y prioridades de proyecto.
 - Cards de proyecto con fechas, badges y avance inicial en `0%`.
 - Filtros frontend por estado.
+- CRUD de tareas dentro de proyectos accesibles.
+- Responsable opcional validado como miembro del proyecto.
+- Cambio rapido de estado y filtros por estado, prioridad y proyecto.
+- Recalculo automatico del avance del proyecto.
 
 ## Rutas frontend
 
@@ -118,6 +123,15 @@ Respuesta esperada:
 Durante el Sprint 3 PostgreSQL debe estar activo. Hibernate crea o actualiza
 temporalmente las tablas de usuarios, espacios, membresias y proyectos.
 
+Durante el Sprint 4 se agrega la tabla `tarea` y el avance del proyecto se
+calcula como:
+
+```text
+tareas completadas / total de tareas * 100
+```
+
+Si un proyecto no tiene tareas, su avance es `0`.
+
 ## Endpoints de Sprint 3
 
 Todos requieren `Authorization: Bearer <token>`.
@@ -157,6 +171,44 @@ Invoke-RestMethod `
   -Headers $headers `
   -ContentType "application/json" `
   -Body "{`"nombre`":`"Sistema FISIHUB`",`"espacioId`":$($espacio.id),`"estado`":`"PLANIFICADO`",`"prioridad`":`"ALTA`"}"
+```
+
+## Endpoints de Sprint 4
+
+Todos requieren `Authorization: Bearer <token>`.
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `GET` | `/api/tareas` | Lista tareas accesibles y acepta filtros |
+| `POST` | `/api/tareas` | Crea una tarea |
+| `GET` | `/api/tareas/{id}` | Obtiene el detalle de una tarea |
+| `PUT` | `/api/tareas/{id}` | Edita una tarea |
+| `PATCH` | `/api/tareas/{id}/estado` | Cambia el estado |
+| `DELETE` | `/api/tareas/{id}` | Elimina una tarea |
+| `GET` | `/api/proyectos/{id}/tareas` | Lista tareas de un proyecto |
+
+Filtros disponibles en `GET /api/tareas`:
+
+```text
+estado, prioridad, proyectoId, responsableId
+```
+
+Ejemplo:
+
+```powershell
+$tarea = Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8080/api/tareas `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body "{`"titulo`":`"Implementar servicio`",`"proyectoId`":1,`"prioridad`":`"ALTA`"}"
+
+Invoke-RestMethod `
+  -Method Patch `
+  -Uri "http://localhost:8080/api/tareas/$($tarea.id)/estado" `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body '{"estado":"COMPLETADA"}'
 ```
 
 ## Probar autenticacion
