@@ -5,9 +5,11 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 0: estructura inicial del frontend, backend y documentacion. Todavia no
-se han implementado autenticacion, dashboard, proyectos, tareas, Kanban,
-reportes, notificaciones ni administracion.
+Sprint 1: sistema de diseno, layout principal, rutas iniciales, componentes UI
+reutilizables y dashboard visual temporal.
+
+Todavia no se han implementado autenticacion, JWT, CRUD, Kanban funcional,
+reportes reales, notificaciones, administracion ni entidades de base de datos.
 
 ## Stack
 
@@ -17,6 +19,28 @@ reportes, notificaciones ni administracion.
 - Base de datos: PostgreSQL.
 - Comunicacion prevista: API REST con JSON.
 - Autenticacion prevista: JWT con Spring Security.
+
+## Componentes del Sprint 1
+
+- Layout responsive con sidebar fijo, topbar y area de contenido.
+- Navegacion agrupada con iconos de Lucide React.
+- Componentes UI: `Button`, `Input`, `Card`, `Badge`, `ProgressBar` y `Toast`.
+- Barra de progreso con gradiente y shimmer violeta.
+- Dashboard temporal con estadisticas y badges de ejemplo.
+- Paginas placeholder sin logica de negocio.
+
+## Rutas frontend
+
+| Ruta | Vista |
+| --- | --- |
+| `/` | Inicio |
+| `/dashboard` | Dashboard temporal |
+| `/proyectos` | Proyectos |
+| `/tareas` | Mis tareas |
+| `/kanban` | Tablero Kanban |
+| `/miembros` | Miembros |
+| `/reportes` | Reportes |
+| `/configuracion` | Configuracion |
 
 ## Requisitos
 
@@ -57,7 +81,21 @@ de estado es:
 GET http://localhost:8080/api/health
 ```
 
-Durante el Sprint 0 el backend puede iniciar sin que PostgreSQL este disponible,
+Tambien se puede probar desde PowerShell:
+
+```powershell
+Invoke-RestMethod http://localhost:8080/api/health
+```
+
+Respuesta esperada:
+
+```json
+{
+  "status": "FISIHUB backend funcionando"
+}
+```
+
+Durante el Sprint 1 el backend puede iniciar sin que PostgreSQL este disponible,
 porque aun no existen entidades ni operaciones de persistencia. Las variables
 ya dejan preparada la conexion para los siguientes sprints.
 
@@ -72,4 +110,3 @@ ya dejan preparada la conexion para los siguientes sprints.
 | `DB_PASSWORD` | Contrasena de PostgreSQL | `postgres` |
 
 No se deben versionar credenciales reales ni archivos `.env`.
-
