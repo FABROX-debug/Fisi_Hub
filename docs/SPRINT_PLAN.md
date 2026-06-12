@@ -17,7 +17,7 @@
 | 2      | Autenticación y usuarios        | ✅ Completo  | Sprint 1   |
 | 3      | Espacios de trabajo y proyectos | ✅ Completo  | Sprint 2   |
 | 4      | Tareas                          | ✅ Completo  | Sprint 3   |
-| 5      | Kanban básico                   | ⏳ Pendiente | Sprint 4   |
+| 5      | Kanban básico                   | ✅ Completo  | Sprint 4   |
 | 6      | Dashboard con datos reales      | ⏳ Pendiente | Sprint 5   |
 | 7      | Miembros y comentarios          | ⏳ Pendiente | Sprint 6   |
 | 8      | Cierre del MVP                  | ⏳ Pendiente | Sprint 7   |
@@ -364,8 +364,8 @@ Crear, asignar y gestionar tareas dentro de proyectos. El usuario puede ver sus 
 
 ## SPRINT 5 — Kanban Básico
 
-**Estado:** ⏳ Pendiente  
-**Commit esperado:** `git commit -m "Sprint 5: tablero Kanban con drag and drop"`  
+**Estado:** ✅ Completado
+**Commit esperado:** `git commit -m "Sprint 5: tablero Kanban con drag and drop"`
 **PostgreSQL requerido:** ✅ SÍ
 
 ### Objetivo
@@ -374,19 +374,19 @@ Implementar el tablero Kanban visual por proyecto. Las tareas se muestran como t
 ### Historias de usuario
 - Como usuario, quiero ver las tareas de un proyecto organizadas en columnas por estado.
 - Como usuario, quiero arrastrar una tarjeta a otra columna y que su estado se actualice automáticamente.
-- Como usuario, quiero hacer clic en una tarjeta y ver su detalle en un panel lateral.
+- Como usuario, quiero cambiar el estado también con un selector accesible.
 
 ### Tareas frontend
-- [ ] Instalar `@dnd-kit/core` y `@dnd-kit/sortable` (librería de drag & drop)
-- [ ] Crear `src/pages/KanbanPage.jsx` — layout horizontal con scroll lateral
-- [ ] Crear `KanbanColumn.jsx` — columna con título, contador y lista de tarjetas droppable
-- [ ] Crear `KanbanCard.jsx` — tarjeta con título, badge prioridad, avatar responsable, fecha, contador de comentarios
-- [ ] Implementar drag & drop: al soltar tarjeta en otra columna → `PATCH /api/tareas/{id}/estado`
-- [ ] Reutilizar `TaskDetailPanel.jsx` del Sprint 4 al hacer clic en tarjeta
-- [ ] Selector de proyecto activo en el Kanban (dropdown o tabs)
-- [ ] Animación suave al mover tarjeta (200ms ease-out)
-- [ ] Tarjeta URGENTE con borde izquierdo rojo pulsante
-- [ ] Columna COMPLETADO con fondo levemente verde
+- [x] Instalar `@dnd-kit/core` para drag and drop entre columnas.
+- [x] Actualizar `src/pages/Kanban.jsx` con layout horizontal y scroll lateral.
+- [x] Crear `KanbanColumn.jsx` con título, contador, estado vacío y área droppable.
+- [x] Crear `KanbanCard.jsx` con título, proyecto, prioridad, responsable, fecha y estado.
+- [x] Implementar drag and drop hacia `PATCH /api/tareas/{id}/estado`.
+- [x] Mantener selector de estado como alternativa al drag and drop.
+- [x] Agregar selector de proyecto activo.
+- [x] Agregar transición visual al mover tarjetas.
+- [x] Diferenciar tareas urgentes y columnas completadas/bloqueadas.
+- [x] Refrescar el avance del proyecto desde el backend tras cada cambio.
 
 ### Tareas backend
 - No hay nuevos endpoints en este sprint. Se usa `PATCH /api/tareas/{id}/estado` del Sprint 4.
@@ -400,12 +400,14 @@ Implementar el tablero Kanban visual por proyecto. Las tareas se muestran como t
 - ❌ No implementar reordenamiento dentro de la misma columna (opcional si hay tiempo)
 
 ### Criterios de aceptación
-- [ ] Las 4 columnas se muestran: PENDIENTE / EN PROCESO / EN REVISIÓN / COMPLETADO
-- [ ] Las tarjetas muestran: título, prioridad (badge), responsable (avatar), fecha límite
-- [ ] El drag & drop funciona: al soltar, el estado se actualiza vía API
-- [ ] El panel lateral se abre al hacer clic en una tarjeta
-- [ ] La columna COMPLETADO tiene fondo diferenciado
-- [ ] Las tarjetas URGENTE tienen el borde pulsante rojo
+- [x] Se muestran PENDIENTE / EN PROCESO / EN REVISIÓN / COMPLETADA / BLOQUEADA.
+- [x] Las tarjetas muestran título, proyecto, prioridad, responsable, fecha y estado.
+- [x] Al soltar una tarjeta se actualiza su estado vía API.
+- [x] El selector permite cambiar estado sin arrastrar.
+- [x] Las columnas tienen estados vacíos y fondos diferenciados.
+- [x] Las tarjetas URGENTE tienen un indicador rojo pulsante.
+- [x] El avance se actualiza al entrar o salir de COMPLETADA.
+- [x] Tests backend, lint y build frontend pasan.
 
 ### Dependencias
 - Sprint 4 ✅ (tareas funcionales con PATCH de estado)

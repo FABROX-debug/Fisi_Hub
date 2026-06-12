@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { getProyectos } from '../services/proyectoService'
+import { getProyecto, getProyectos } from '../services/proyectoService'
 import {
   createTarea,
   deleteTarea,
@@ -54,6 +54,11 @@ const useTaskStore = create((set, get) => ({
       const task = await updateEstadoTarea(id, estado)
       set({
         tareas: get().tareas.map((item) => (item.id === id ? task : item)),
+      })
+      const project = await getProyecto(task.proyectoId)
+      set({
+        proyectos: get().proyectos.map((item) =>
+          item.id === project.id ? project : item),
         saving: false,
       })
       return task

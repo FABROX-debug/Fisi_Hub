@@ -172,6 +172,22 @@ class TaskControllerIntegrationTest {
                 .andExpect(jsonPath("$.prioridad").value("URGENTE"));
         assertProjectProgress(projectId, owner.token(), 100);
 
+        mockMvc.perform(patch("/api/tareas/{id}/estado", firstTaskId)
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\":\"EN_PROCESO\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("EN_PROCESO"));
+        assertProjectProgress(projectId, owner.token(), 50);
+
+        mockMvc.perform(patch("/api/tareas/{id}/estado", firstTaskId)
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\":\"COMPLETADA\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("COMPLETADA"));
+        assertProjectProgress(projectId, owner.token(), 100);
+
         mockMvc.perform(post("/api/tareas")
                         .header("Authorization", bearer(owner.token()))
                         .contentType(MediaType.APPLICATION_JSON)

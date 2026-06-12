@@ -5,11 +5,11 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 4: gestion de tareas dentro de proyectos con responsables, estados,
-prioridades y recalculo del avance.
+Sprint 5: tablero Kanban basico por proyecto con tareas reales, drag and drop,
+cambio de estado persistente y recalculo del avance.
 
-Todavia no se han implementado Kanban funcional, comentarios, reportes reales,
-notificaciones ni panel administrativo.
+Todavia no se han implementado comentarios, reportes reales, notificaciones,
+dashboard con datos reales ni panel administrativo.
 
 ## Stack
 
@@ -41,6 +41,10 @@ notificaciones ni panel administrativo.
 - Responsable opcional validado como miembro del proyecto.
 - Cambio rapido de estado y filtros por estado, prioridad y proyecto.
 - Recalculo automatico del avance del proyecto.
+- Tablero Kanban protegido con cinco columnas de estado.
+- Drag and drop con `@dnd-kit/core` y selector de estado alternativo.
+- Selector de proyecto, estados vacios, loading y errores visuales.
+- Sincronizacion del progreso del proyecto despues de mover una tarea.
 
 ## Rutas frontend
 
@@ -132,6 +136,9 @@ tareas completadas / total de tareas * 100
 
 Si un proyecto no tiene tareas, su avance es `0`.
 
+Sprint 5 no agrega tablas ni endpoints. El Kanban consume tareas reales de
+PostgreSQL mediante los endpoints de Sprint 4.
+
 ## Endpoints de Sprint 3
 
 Todos requieren `Authorization: Bearer <token>`.
@@ -209,6 +216,36 @@ Invoke-RestMethod `
   -Headers $headers `
   -ContentType "application/json" `
   -Body '{"estado":"COMPLETADA"}'
+```
+
+## Kanban de Sprint 5
+
+La ruta protegida `http://localhost:5173/kanban` permite:
+
+- Seleccionar uno de los proyectos accesibles.
+- Ver tareas agrupadas en cinco columnas por estado.
+- Arrastrar una tarjeta a otra columna.
+- Cambiar estado con un selector si no se usa drag and drop.
+- Ver el avance confirmado por el backend despues de cada cambio.
+
+Endpoints reutilizados:
+
+```text
+GET /api/tareas
+GET /api/proyectos
+GET /api/proyectos/{id}
+GET /api/proyectos/{id}/tareas
+PATCH /api/tareas/{id}/estado
+```
+
+Validacion local:
+
+```powershell
+cd frontend
+npm install
+npm run lint
+npm run build
+npm run dev
 ```
 
 ## Probar autenticacion
