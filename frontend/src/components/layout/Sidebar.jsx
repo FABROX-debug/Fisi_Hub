@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import useAuthStore from '../../store/authStore'
 
 const navigation = [
   {
@@ -60,6 +61,15 @@ const itemClasses =
   'flex w-full items-center gap-3 border-l-2 px-5 py-2.5 text-sm transition-colors'
 
 function Sidebar({ open, onClose }) {
+  const user = useAuthStore((state) => state.user)
+  const initials = user?.nombre
+    ?.split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase() || 'FH'
+  const primaryRole = user?.roles?.[0] ?? 'MIEMBRO'
+
   return (
     <>
       {open && (
@@ -153,11 +163,13 @@ function Sidebar({ open, onClose }) {
         <div className="border-t border-white/10 p-4">
           <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
             <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-accentLight to-accent text-sm font-bold">
-              FH
+              {initials}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">Fabrizio</p>
-              <p className="text-xs text-violet-300">Vista temporal</p>
+              <p className="truncate text-sm font-semibold">
+                {user?.nombre ?? 'Usuario'}
+              </p>
+              <p className="text-xs text-violet-300">{primaryRole}</p>
             </div>
           </div>
         </div>
@@ -167,4 +179,3 @@ function Sidebar({ open, onClose }) {
 }
 
 export default Sidebar
-

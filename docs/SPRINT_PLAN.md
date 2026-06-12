@@ -13,8 +13,8 @@
 | Sprint | Nombre                          | Estado      | Depende de |
 |--------|---------------------------------|-------------|------------|
 | 0      | Preparación del MVP             | ✅ Completo  | —          |
-| 1      | Sistema de diseño y layout base | ⏳ Pendiente | Sprint 0   |
-| 2      | Autenticación y usuarios        | ⏳ Pendiente | Sprint 1   |
+| 1      | Sistema de diseño y layout base | ✅ Completo  | Sprint 0   |
+| 2      | Autenticación y usuarios        | ✅ Completo  | Sprint 1   |
 | 3      | Espacios de trabajo y proyectos | ⏳ Pendiente | Sprint 2   |
 | 4      | Tareas                          | ⏳ Pendiente | Sprint 3   |
 | 5      | Kanban básico                   | ⏳ Pendiente | Sprint 4   |
@@ -26,7 +26,7 @@
 
 ## SPRINT 0 — Preparación del MVP
 
-**Estado:** ✅ Completado  
+**Estado:** ✅ Completado
 **Commit:** `git commit -m "Sprint 0: preparación del MVP"`
 
 ### Objetivo
@@ -55,7 +55,7 @@ Dejar el proyecto base listo para desarrollo. Sin lógica de negocio, sin CRUD, 
 
 ## SPRINT 1 — Sistema de Diseño y Layout Base
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado
 **Commit esperado:** `git commit -m "Sprint 1: sistema de diseño y layout base"`  
 **PostgreSQL requerido:** ❌ NO (aún no)
 
@@ -141,7 +141,7 @@ Una app React navegable, visualmente consistente con la identidad FISIHUB, sin n
 
 ## SPRINT 2 — Autenticación y Usuarios
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado
 **Commit esperado:** `git commit -m "Sprint 2: autenticación JWT y gestión de usuarios"`  
 **PostgreSQL requerido:** ✅ SÍ — debe estar instalado ANTES de este sprint
 

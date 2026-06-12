@@ -7,6 +7,7 @@ import {
 import Badge from '../components/ui/Badge'
 import Card from '../components/ui/Card'
 import ProgressBar from '../components/ui/ProgressBar'
+import useAuthStore from '../store/authStore'
 
 const stats = [
   {
@@ -48,12 +49,14 @@ const stats = [
 ]
 
 function Dashboard() {
+  const user = useAuthStore((state) => state.user)
+
   return (
     <div className="space-y-6">
       <div>
         <p className="text-sm font-medium text-accent">Resumen de trabajo</p>
         <h2 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
-          Hola, Fabrizio
+          Hola, {user?.nombre ?? 'Usuario'}
         </h2>
         <p className="mt-2 text-textMuted">
           Esta es una vista temporal del dashboard del MVP.
@@ -122,7 +125,9 @@ function Dashboard() {
             </div>
             <div>
               <p className="text-textMuted">Responsable</p>
-              <p className="mt-1 font-semibold">Fabrizio</p>
+              <p className="mt-1 font-semibold">
+                {user?.nombre ?? 'Usuario'}
+              </p>
             </div>
           </div>
         </Card>
@@ -153,4 +158,3 @@ function Dashboard() {
 }
 
 export default Dashboard
-
