@@ -5,11 +5,11 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 5: tablero Kanban basico por proyecto con tareas reales, drag and drop,
-cambio de estado persistente y recalculo del avance.
+Sprint 6: dashboard protegido con estadisticas, proyectos activos y tareas
+reales del usuario autenticado.
 
 Todavia no se han implementado comentarios, reportes reales, notificaciones,
-dashboard con datos reales ni panel administrativo.
+historial de actividad, gestion de miembros ni panel administrativo.
 
 ## Stack
 
@@ -26,7 +26,7 @@ dashboard con datos reales ni panel administrativo.
 - Navegacion agrupada con iconos de Lucide React.
 - Componentes UI: `Button`, `Input`, `Card`, `Badge`, `ProgressBar` y `Toast`.
 - Barra de progreso con gradiente y shimmer violeta.
-- Dashboard temporal con estadisticas y badges de ejemplo.
+- Dashboard con datos reales y aislamiento por usuario autenticado.
 - Registro e inicio de sesion.
 - Estado de autenticacion con Zustand y token en `localStorage`.
 - Restauracion de sesion mediante `GET /api/auth/me`.
@@ -45,6 +45,9 @@ dashboard con datos reales ni panel administrativo.
 - Drag and drop con `@dnd-kit/core` y selector de estado alternativo.
 - Selector de proyecto, estados vacios, loading y errores visuales.
 - Sincronizacion del progreso del proyecto despues de mover una tarea.
+- Estadisticas de proyectos activos, tareas pendientes, completadas y vencidas.
+- Proyectos activos recientes con avance real.
+- Tareas para hoy, proximas y vencidas.
 
 ## Rutas frontend
 
@@ -53,7 +56,7 @@ dashboard con datos reales ni panel administrativo.
 | `/` | Landing publica |
 | `/login` | Inicio de sesion |
 | `/register` | Registro |
-| `/dashboard` | Dashboard temporal protegido |
+| `/dashboard` | Dashboard real protegido |
 | `/espacios` | Espacios de trabajo del usuario |
 | `/proyectos` | Proyectos |
 | `/tareas` | Mis tareas |
@@ -138,6 +141,9 @@ Si un proyecto no tiene tareas, su avance es `0`.
 
 Sprint 5 no agrega tablas ni endpoints. El Kanban consume tareas reales de
 PostgreSQL mediante los endpoints de Sprint 4.
+
+Sprint 6 agrega un resumen de dashboard sin crear tablas nuevas. La actividad
+reciente se devuelve vacia hasta que exista un historial persistente.
 
 ## Endpoints de Sprint 3
 
@@ -246,6 +252,32 @@ npm install
 npm run lint
 npm run build
 npm run dev
+```
+
+## Dashboard de Sprint 6
+
+El endpoint requiere `Authorization: Bearer <token>`:
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `GET` | `/api/dashboard/resumen` | Estadisticas y listas del dashboard |
+
+Incluye:
+
+- Cantidad de proyectos activos.
+- Tareas pendientes, completadas, vencidas y para hoy.
+- Porcentaje promedio de avance de proyectos accesibles.
+- Hasta cinco proyectos activos recientes.
+- Tareas pendientes para hoy o los proximos tres dias.
+- Detalle de tareas vencidas.
+- Actividad reciente vacia mientras no exista historial.
+
+Prueba manual:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://localhost:8080/api/dashboard/resumen `
+  -Headers @{ Authorization = "Bearer $($login.token)" }
 ```
 
 ## Probar autenticacion

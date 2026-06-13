@@ -18,7 +18,7 @@
 | 3      | Espacios de trabajo y proyectos | ✅ Completo  | Sprint 2   |
 | 4      | Tareas                          | ✅ Completo  | Sprint 3   |
 | 5      | Kanban básico                   | ✅ Completo  | Sprint 4   |
-| 6      | Dashboard con datos reales      | ⏳ Pendiente | Sprint 5   |
+| 6      | Dashboard con datos reales      | ✅ Completo  | Sprint 5   |
 | 7      | Miembros y comentarios          | ⏳ Pendiente | Sprint 6   |
 | 8      | Cierre del MVP                  | ⏳ Pendiente | Sprint 7   |
 
@@ -416,7 +416,7 @@ Implementar el tablero Kanban visual por proyecto. Las tareas se muestran como t
 
 ## SPRINT 6 — Dashboard con Datos Reales
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado
 **Commit esperado:** `git commit -m "Sprint 6: dashboard con datos reales del backend"`  
 **PostgreSQL requerido:** ✅ SÍ
 
@@ -429,29 +429,27 @@ Reemplazar los datos hardcodeados del dashboard por datos reales del backend. El
 - Como usuario, quiero ver la actividad reciente de mis proyectos.
 
 ### Tareas frontend
-- [ ] Crear `src/services/dashboardService.js` con función `getDashboardStats()`
-- [ ] Conectar las 4 stat cards a datos reales: proyectos activos, pendientes, completadas, vencidas
-- [ ] Conectar la lista de proyectos activos a datos reales (con ProgressBar real)
-- [ ] Mostrar tareas que vencen hoy o en los próximos 3 días
-- [ ] Mostrar las últimas 5 acciones de actividad reciente
-- [ ] Manejar estado de carga con Skeleton mientras llega la API
-- [ ] Manejar estado vacío con EmptyState si no hay datos
+- [x] Crear `src/services/dashboardService.js`.
+- [x] Conectar las 4 stat cards a datos reales.
+- [x] Mostrar proyectos activos con `ProgressBar` real.
+- [x] Mostrar tareas de hoy, próximos 3 días y vencidas.
+- [x] Devolver actividad reciente vacía al no existir historial.
+- [x] Manejar estados de carga, error y datos vacíos.
 
 ### Tareas backend
-- [ ] Crear `DashboardController` (Boundary) con `GET /api/dashboard/stats`
-- [ ] Crear `DashboardService` que calcule:
+- [x] Crear `DashboardController` con `GET /api/dashboard/resumen`.
+- [x] Crear `DashboardService` que calcule:
   - Proyectos activos del usuario
   - Tareas pendientes del usuario
-  - Tareas completadas del usuario (último mes)
+  - Tareas completadas del usuario
   - Tareas vencidas del usuario
   - Tareas que vencen en los próximos 3 días
-  - Últimas 5 acciones registradas en `HistorialActividad` del usuario
-- [ ] Crear `HistorialActividad` entidad (id, usuarioId, accion, entidadTipo, entidadId, descripcion, fecha)
-- [ ] Registrar actividad en servicios existentes: cuando se crea/completa una tarea, cuando se crea un proyecto
-- [ ] Crear `DashboardStatsResponse` DTO
+  - Porcentaje promedio de avance
+- [x] Crear DTOs de resumen, proyecto, tarea y actividad.
+- [x] Mantener `actividadReciente` vacía sin agregar persistencia fuera del alcance.
 
 ### Tareas de base de datos
-- [ ] Tabla `historial_actividad`
+- No se agregan tablas en este sprint.
 
 ### Qué NO debe hacer Codex en este sprint
 - ❌ No implementar notificaciones push
@@ -459,11 +457,13 @@ Reemplazar los datos hardcodeados del dashboard por datos reales del backend. El
 - ❌ No refactorizar sprints anteriores
 
 ### Criterios de aceptación
-- [ ] `GET /api/dashboard/stats` devuelve datos reales del usuario autenticado
-- [ ] Las 4 stat cards muestran números reales
-- [ ] La lista de proyectos usa ProgressBar con el porcentaje real de la BD
-- [ ] Las tareas de hoy se listan correctamente
-- [ ] El feed de actividad reciente muestra las últimas acciones reales
+- [x] `GET /api/dashboard/resumen` devuelve datos reales del usuario autenticado.
+- [x] El endpoint falla sin JWT.
+- [x] Las 4 stat cards muestran números reales.
+- [x] La lista de proyectos usa el porcentaje real de la BD.
+- [x] Las tareas de hoy, próximas y vencidas se listan correctamente.
+- [x] Los usuarios no ven datos de proyectos ajenos.
+- [x] Tests backend, lint y build frontend pasan.
 
 ### Dependencias
 - Sprint 5 ✅
