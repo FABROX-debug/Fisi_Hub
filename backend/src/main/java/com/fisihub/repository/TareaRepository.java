@@ -28,4 +28,13 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
     long countByProyectoId(Long proyectoId);
 
     long countByProyectoIdAndEstado(Long proyectoId, EstadoTarea estado);
+
+    long countByProyectoIdAndResponsableId(
+            Long proyectoId,
+            Long responsableId);
+
+    long countByProyectoIdAndResponsableIdAndEstadoNot(
+            Long proyectoId,
+            Long responsableId,
+            EstadoTarea estado);
 }

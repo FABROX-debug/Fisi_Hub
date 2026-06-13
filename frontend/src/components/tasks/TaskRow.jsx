@@ -1,4 +1,10 @@
-import { CalendarDays, Edit3, Trash2, UserRound } from 'lucide-react'
+import {
+  CalendarDays,
+  Edit3,
+  MessageSquare,
+  Trash2,
+  UserRound,
+} from 'lucide-react'
 import Badge from '../ui/Badge'
 
 const stateBadge = {
@@ -19,7 +25,14 @@ const formatDate = (value) => {
   }).format(new Date(`${value}T00:00:00Z`))
 }
 
-function TaskRow({ task, saving, onEdit, onDelete, onStatusChange }) {
+function TaskRow({
+  task,
+  saving,
+  onEdit,
+  onDelete,
+  onComments,
+  onStatusChange,
+}) {
   return (
     <tr className="border-b border-border last:border-0 hover:bg-violet-50/40">
       <td className="min-w-64 px-4 py-4">
@@ -63,6 +76,14 @@ function TaskRow({ task, saving, onEdit, onDelete, onStatusChange }) {
       </td>
       <td className="px-4 py-4">
         <div className="flex justify-end gap-1">
+          <button
+            type="button"
+            aria-label={`Comentarios de ${task.titulo}`}
+            className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
+            onClick={() => onComments(task)}
+          >
+            <MessageSquare size={17} />
+          </button>
           <button
             type="button"
             aria-label={`Editar ${task.titulo}`}

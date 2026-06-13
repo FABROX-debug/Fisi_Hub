@@ -5,11 +5,11 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 6: dashboard protegido con estadisticas, proyectos activos y tareas
-reales del usuario autenticado.
+Sprint 7: colaboracion protegida mediante miembros de proyecto, comentarios
+en tareas e historial basico de actividad.
 
-Todavia no se han implementado comentarios, reportes reales, notificaciones,
-historial de actividad, gestion de miembros ni panel administrativo.
+Todavia no se han implementado reportes reales, notificaciones ni panel
+administrativo.
 
 ## Stack
 
@@ -48,6 +48,11 @@ historial de actividad, gestion de miembros ni panel administrativo.
 - Estadisticas de proyectos activos, tareas pendientes, completadas y vencidas.
 - Proyectos activos recientes con avance real.
 - Tareas para hoy, proximas y vencidas.
+- Gestion de miembros por proyecto con roles internos `LIDER` y `MIEMBRO`.
+- Carga basica por cantidad de tareas activas asignadas.
+- Comentarios persistentes en tareas con autoria y fecha.
+- Historial de creacion de proyectos y tareas, cambios de estado, miembros
+  agregados y comentarios.
 
 ## Rutas frontend
 
@@ -61,7 +66,7 @@ historial de actividad, gestion de miembros ni panel administrativo.
 | `/proyectos` | Proyectos |
 | `/tareas` | Mis tareas |
 | `/kanban` | Tablero Kanban |
-| `/miembros` | Miembros |
+| `/miembros` | Miembros y actividad por proyecto |
 | `/reportes` | Reportes |
 | `/configuracion` | Configuracion |
 
@@ -142,8 +147,9 @@ Si un proyecto no tiene tareas, su avance es `0`.
 Sprint 5 no agrega tablas ni endpoints. El Kanban consume tareas reales de
 PostgreSQL mediante los endpoints de Sprint 4.
 
-Sprint 6 agrega un resumen de dashboard sin crear tablas nuevas. La actividad
-reciente se devuelve vacia hasta que exista un historial persistente.
+Sprint 6 agrega un resumen de dashboard. Sprint 7 agrega las tablas
+`comentario` e `historial_actividad`; la actividad reciente del dashboard
+ahora se obtiene del historial persistente.
 
 ## Endpoints de Sprint 3
 
@@ -270,7 +276,7 @@ Incluye:
 - Hasta cinco proyectos activos recientes.
 - Tareas pendientes para hoy o los proximos tres dias.
 - Detalle de tareas vencidas.
-- Actividad reciente vacia mientras no exista historial.
+- Hasta cinco eventos recientes del historial de proyectos accesibles.
 
 Prueba manual:
 
@@ -278,6 +284,47 @@ Prueba manual:
 Invoke-RestMethod `
   -Uri http://localhost:8080/api/dashboard/resumen `
   -Headers @{ Authorization = "Bearer $($login.token)" }
+```
+
+## Colaboracion de Sprint 7
+
+Todos los endpoints requieren `Authorization: Bearer <token>`.
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `GET` | `/api/proyectos/{id}/miembros` | Lista miembros y carga activa |
+| `POST` | `/api/proyectos/{id}/miembros` | Agrega usuario por correo |
+| `PATCH` | `/api/proyectos/{id}/miembros/{usuarioId}/rol` | Cambia rol interno |
+| `DELETE` | `/api/proyectos/{id}/miembros/{usuarioId}` | Quita un miembro |
+| `GET` | `/api/tareas/{id}/comentarios` | Lista comentarios cronologicamente |
+| `POST` | `/api/tareas/{id}/comentarios` | Crea un comentario |
+| `DELETE` | `/api/comentarios/{id}` | Elimina un comentario autorizado |
+| `GET` | `/api/proyectos/{id}/actividad` | Lista actividad reciente |
+
+Solo un `LIDER` interno o un usuario `ADMIN` puede gestionar miembros. No se
+permiten duplicados ni dejar el proyecto sin lider. Los comentarios pueden ser
+eliminados por su autor, un lider del proyecto o un administrador.
+
+Ejemplo para agregar un miembro:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:8080/api/proyectos/1/miembros" `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body '{"correo":"miembro@ejemplo.com","rol":"MIEMBRO"}'
+```
+
+Ejemplo para comentar:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:8080/api/tareas/1/comentarios" `
+  -Headers $headers `
+  -ContentType "application/json" `
+  -Body '{"contenido":"Revision completada"}'
 ```
 
 ## Probar autenticacion

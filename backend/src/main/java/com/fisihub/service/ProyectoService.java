@@ -25,14 +25,17 @@ public class ProyectoService {
     private final ProyectoRepository proyectoRepository;
     private final EspacioService espacioService;
     private final UsuarioService usuarioService;
+    private final HistorialActividadService historialService;
 
     public ProyectoService(
             ProyectoRepository proyectoRepository,
             EspacioService espacioService,
-            UsuarioService usuarioService) {
+            UsuarioService usuarioService,
+            HistorialActividadService historialService) {
         this.proyectoRepository = proyectoRepository;
         this.espacioService = espacioService;
         this.usuarioService = usuarioService;
+        this.historialService = historialService;
     }
 
     @Transactional
@@ -56,7 +59,14 @@ public class ProyectoService {
                 espacio,
                 usuario);
         proyecto.agregarMiembro(usuario, RolProyecto.LIDER);
-        return toResponse(proyectoRepository.save(proyecto));
+        Proyecto guardado = proyectoRepository.save(proyecto);
+        historialService.registrar(
+                guardado,
+                usuario,
+                com.fisihub.model.TipoActividad.PROYECTO_CREADO,
+                usuario.getNombre() + " creo el proyecto \""
+                        + guardado.getNombre() + "\"");
+        return toResponse(guardado);
     }
 
     @Transactional(readOnly = true)

@@ -1,5 +1,7 @@
 package com.fisihub.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,16 +12,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(
-        name = "miembro_proyecto",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_miembro_proyecto",
-                columnNames = {"proyecto_id", "usuario_id"}))
-public class MiembroProyecto {
+@Table(name = "historial_actividad")
+public class HistorialActividad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,19 +32,32 @@ public class MiembroProyecto {
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "rol_en_proyecto", nullable = false, length = 20)
-    private RolProyecto rol;
+    @Column(nullable = false, length = 40)
+    private TipoActividad tipo;
 
-    protected MiembroProyecto() {
+    @Column(nullable = false, length = 500)
+    private String descripcion;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime fecha;
+
+    protected HistorialActividad() {
     }
 
-    public MiembroProyecto(
+    public HistorialActividad(
             Proyecto proyecto,
             Usuario usuario,
-            RolProyecto rol) {
+            TipoActividad tipo,
+            String descripcion) {
         this.proyecto = proyecto;
         this.usuario = usuario;
-        this.rol = rol;
+        this.tipo = tipo;
+        this.descripcion = descripcion;
+    }
+
+    @PrePersist
+    void prePersist() {
+        fecha = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -61,11 +72,15 @@ public class MiembroProyecto {
         return usuario;
     }
 
-    public RolProyecto getRol() {
-        return rol;
+    public TipoActividad getTipo() {
+        return tipo;
     }
 
-    public void cambiarRol(RolProyecto rol) {
-        this.rol = rol;
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public LocalDateTime getFecha() {
+        return fecha;
     }
 }

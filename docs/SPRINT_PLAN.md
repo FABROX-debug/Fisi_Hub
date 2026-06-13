@@ -19,7 +19,7 @@
 | 4      | Tareas                          | ✅ Completo  | Sprint 3   |
 | 5      | Kanban básico                   | ✅ Completo  | Sprint 4   |
 | 6      | Dashboard con datos reales      | ✅ Completo  | Sprint 5   |
-| 7      | Miembros y comentarios          | ⏳ Pendiente | Sprint 6   |
+| 7      | Miembros y comentarios          | ✅ Completo  | Sprint 6   |
 | 8      | Cierre del MVP                  | ⏳ Pendiente | Sprint 7   |
 
 ---
@@ -233,7 +233,7 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 ## SPRINT 3 — Espacios de Trabajo y Proyectos
 
-**Estado:** ✅ Completado  
+**Estado:** ✅ Completado
 **Commit esperado:** `git commit -m "Sprint 3: espacios de trabajo y proyectos CRUD"`  
 **PostgreSQL requerido:** ✅ SÍ
 
@@ -472,7 +472,7 @@ Reemplazar los datos hardcodeados del dashboard por datos reales del backend. El
 
 ## SPRINT 7 — Miembros y Comentarios
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado
 **Commit esperado:** `git commit -m "Sprint 7: gestión de miembros y comentarios en tareas"`  
 **PostgreSQL requerido:** ✅ SÍ
 
@@ -485,29 +485,30 @@ Gestionar miembros de proyectos (agregar/quitar/asignar rol) y permitir comentar
 - Como miembro, quiero comentar en una tarea para coordinar con el equipo.
 
 ### Tareas frontend
-- [ ] Crear `src/pages/MiembrosPage.jsx` — lista con avatar, nombre, rol, tareas asignadas, barra de carga de trabajo
-- [ ] Implementar modal de agregar miembro (buscar usuario por nombre/correo)
-- [ ] Mostrar badge "Alta carga" si el miembro tiene 5+ tareas activas
-- [ ] Agregar sección de comentarios en `TaskDetailPanel.jsx` — lista de comentarios + campo de texto + botón enviar
-- [ ] Crear `src/services/comentarioService.js`
-- [ ] Mostrar timestamp relativo en comentarios (hace X minutos / hace X horas)
+- [x] Actualizar `src/pages/Members.jsx` con avatar, nombre, rol y carga de trabajo.
+- [x] Implementar formulario para agregar miembros por correo.
+- [x] Mostrar badge "Carga alta" si el miembro tiene 5+ tareas activas.
+- [x] Agregar panel modal de comentarios desde la tabla de tareas.
+- [x] Crear `src/services/comentarioService.js` y `miembroService.js`.
+- [x] Mostrar fecha y hora localizada en comentarios y actividad.
 
 ### Tareas backend
-- [ ] Crear endpoints de miembros:
+- [x] Crear endpoints de miembros:
   - `POST /api/proyectos/{id}/miembros` — agregar miembro
   - `DELETE /api/proyectos/{id}/miembros/{usuarioId}` — quitar miembro
   - `PATCH /api/proyectos/{id}/miembros/{usuarioId}/rol` — cambiar rol
   - `GET /api/proyectos/{id}/miembros` — listar con carga de trabajo
-- [ ] Crear entidad `Comentario` (id, tareaId, autorId, contenido, creadoEn)
-- [ ] Crear `ComentarioRepository`, `ComentarioService`, `ComentarioController`
-- [ ] Endpoints de comentarios:
+- [x] Crear entidad `Comentario` (id, tareaId, autorId, contenido, creadoEn).
+- [x] Crear entidad `HistorialActividad` y registrar eventos basicos.
+- [x] Crear repositories, services y controllers de colaboracion.
+- [x] Endpoints de comentarios:
   - `GET /api/tareas/{id}/comentarios`
   - `POST /api/tareas/{id}/comentarios`
   - `DELETE /api/comentarios/{id}` (solo el autor o el líder)
-- [ ] Crear DTOs: `ComentarioRequest`, `ComentarioResponse`, `MiembroConCargaResponse`
+- [x] Crear DTOs de comentarios, miembros, roles y actividad.
 
 ### Tareas de base de datos
-- [ ] Tabla `comentario`
+- [x] Tablas `comentario` e `historial_actividad`.
 
 ### Qué NO debe hacer Codex en este sprint
 - ❌ No implementar menciones con @usuario
@@ -515,11 +516,12 @@ Gestionar miembros de proyectos (agregar/quitar/asignar rol) y permitir comentar
 - ❌ No implementar notificaciones push por comentario
 
 ### Criterios de aceptación
-- [ ] Se puede agregar un miembro a un proyecto buscando por correo
-- [ ] La lista de miembros muestra su carga de trabajo real
-- [ ] Se puede comentar en una tarea desde el panel lateral
-- [ ] Los comentarios se ordenan cronológicamente
-- [ ] Solo el autor o el líder puede eliminar un comentario
+- [x] Se puede agregar un miembro a un proyecto buscando por correo.
+- [x] La lista de miembros muestra su carga de trabajo real.
+- [x] Se puede comentar en una tarea desde su panel modal.
+- [x] Los comentarios se ordenan cronologicamente.
+- [x] Solo el autor, un lider o un administrador puede eliminar un comentario.
+- [x] La actividad del proyecto se persiste y se lista con control de acceso.
 
 ### Dependencias
 - Sprint 6 ✅

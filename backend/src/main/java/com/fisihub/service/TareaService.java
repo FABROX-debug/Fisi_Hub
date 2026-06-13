@@ -27,16 +27,19 @@ public class TareaService {
     private final MiembroProyectoRepository miembroProyectoRepository;
     private final ProyectoService proyectoService;
     private final UsuarioService usuarioService;
+    private final HistorialActividadService historialService;
 
     public TareaService(
             TareaRepository tareaRepository,
             MiembroProyectoRepository miembroProyectoRepository,
             ProyectoService proyectoService,
-            UsuarioService usuarioService) {
+            UsuarioService usuarioService,
+            HistorialActividadService historialService) {
         this.tareaRepository = tareaRepository;
         this.miembroProyectoRepository = miembroProyectoRepository;
         this.proyectoService = proyectoService;
         this.usuarioService = usuarioService;
+        this.historialService = historialService;
     }
 
     @Transactional
@@ -64,6 +67,12 @@ public class TareaService {
                 creador);
         Tarea guardada = tareaRepository.saveAndFlush(tarea);
         recalcularAvance(proyecto);
+        historialService.registrar(
+                proyecto,
+                creador,
+                com.fisihub.model.TipoActividad.TAREA_CREADA,
+                creador.getNombre() + " creo la tarea \""
+                        + guardada.getTitulo() + "\"");
         return toResponse(guardada);
     }
 
@@ -142,9 +151,17 @@ public class TareaService {
             EstadoTareaRequest request,
             String correo) {
         Tarea tarea = buscarAccesible(id, correo);
+        EstadoTarea estadoAnterior = tarea.getEstado();
         tarea.cambiarEstado(request.estado());
         tareaRepository.flush();
         recalcularAvance(tarea.getProyecto());
+        Usuario actor = usuarioService.buscarPorCorreo(correo);
+        historialService.registrar(
+                tarea.getProyecto(),
+                actor,
+                com.fisihub.model.TipoActividad.ESTADO_TAREA_CAMBIADO,
+                actor.getNombre() + " cambio \"" + tarea.getTitulo()
+                        + "\" de " + estadoAnterior + " a " + request.estado());
         return toResponse(tarea);
     }
 

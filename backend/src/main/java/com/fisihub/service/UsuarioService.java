@@ -60,6 +60,13 @@ public class UsuarioService {
                         "Usuario no encontrado"));
     }
 
+    @Transactional(readOnly = true)
+    public boolean esAdmin(String correo) {
+        return buscarPorCorreo(correo).getUsuarioRoles().stream()
+                .anyMatch(usuarioRol ->
+                        usuarioRol.getRol().getNombre() == RolNombre.ADMIN);
+    }
+
     public UsuarioResponse toResponse(Usuario usuario) {
         Set<String> roles = usuario.getUsuarioRoles().stream()
                 .map(usuarioRol -> usuarioRol.getRol().getNombre().name())
@@ -80,4 +87,3 @@ public class UsuarioService {
         return correo.trim().toLowerCase(Locale.ROOT);
     }
 }
-

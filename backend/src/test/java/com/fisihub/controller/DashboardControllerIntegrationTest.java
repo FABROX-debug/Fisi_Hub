@@ -147,7 +147,9 @@ class DashboardControllerIntegrationTest {
                         .value(1))
                 .andExpect(jsonPath("$.tareasVencidasDetalle[0].titulo")
                         .value("Tarea vencida"))
-                .andExpect(jsonPath("$.actividadReciente").isEmpty());
+                .andExpect(jsonPath("$.actividadReciente.length()").value(5))
+                .andExpect(jsonPath("$.actividadReciente[0].tipo")
+                        .value("TAREA_CREADA"));
     }
 
     private AuthData register(String nombre, String correo) throws Exception {

@@ -1,6 +1,7 @@
 import { CheckSquare2, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import TaskFormModal from '../components/tasks/TaskFormModal'
+import TaskCommentsModal from '../components/tasks/TaskCommentsModal'
 import TaskRow from '../components/tasks/TaskRow'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -29,6 +30,7 @@ function Tasks() {
   const [editing, setEditing] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [commentTask, setCommentTask] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -186,6 +188,7 @@ function Tasks() {
                       setFormOpen(true)
                     }}
                     onDelete={setDeleting}
+                    onComments={setCommentTask}
                     onStatusChange={handleStatusChange}
                   />
                 ))}
@@ -202,6 +205,10 @@ function Tasks() {
         saving={saving}
         onClose={() => setFormOpen(false)}
         onSave={saveTask}
+      />
+      <TaskCommentsModal
+        task={commentTask}
+        onClose={() => setCommentTask(null)}
       />
       <ConfirmDialog
         open={Boolean(deleting)}

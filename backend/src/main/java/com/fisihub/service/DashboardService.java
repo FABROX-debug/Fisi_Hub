@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisihub.dto.DashboardProyectoResponse;
 import com.fisihub.dto.DashboardResumenResponse;
 import com.fisihub.dto.DashboardTareaResponse;
+import com.fisihub.dto.DashboardActividadResponse;
 import com.fisihub.model.EstadoProyecto;
 import com.fisihub.model.EstadoTarea;
 import com.fisihub.model.Proyecto;
@@ -26,12 +27,15 @@ public class DashboardService {
 
     private final ProyectoRepository proyectoRepository;
     private final TareaRepository tareaRepository;
+    private final HistorialActividadService historialService;
 
     public DashboardService(
             ProyectoRepository proyectoRepository,
-            TareaRepository tareaRepository) {
+            TareaRepository tareaRepository,
+            HistorialActividadService historialService) {
         this.proyectoRepository = proyectoRepository;
         this.tareaRepository = tareaRepository;
+        this.historialService = historialService;
     }
 
     @Transactional(readOnly = true)
@@ -93,7 +97,14 @@ public class DashboardService {
                         .limit(MAX_TAREAS)
                         .map(this::toTareaResponse)
                         .toList(),
-                List.of());
+                historialService.listarRecientesDelUsuario(correo)
+                        .stream()
+                        .map(actividad -> new DashboardActividadResponse(
+                                actividad.tipo().name(),
+                                actividad.descripcion(),
+                                actividad.usuarioNombre(),
+                                actividad.fecha()))
+                        .toList());
     }
 
     private boolean esProyectoActivo(Proyecto proyecto) {
