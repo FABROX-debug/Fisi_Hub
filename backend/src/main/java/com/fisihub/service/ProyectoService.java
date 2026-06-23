@@ -26,16 +26,22 @@ public class ProyectoService {
     private final EspacioService espacioService;
     private final UsuarioService usuarioService;
     private final HistorialActividadService historialService;
+    private final ProyectoPermisoService permisoService;
+    private final EspacioPermisoService espacioPermisoService;
 
     public ProyectoService(
             ProyectoRepository proyectoRepository,
             EspacioService espacioService,
             UsuarioService usuarioService,
-            HistorialActividadService historialService) {
+            HistorialActividadService historialService,
+            ProyectoPermisoService permisoService,
+            EspacioPermisoService espacioPermisoService) {
         this.proyectoRepository = proyectoRepository;
         this.espacioService = espacioService;
         this.usuarioService = usuarioService;
         this.historialService = historialService;
+        this.permisoService = permisoService;
+        this.espacioPermisoService = espacioPermisoService;
     }
 
     @Transactional
@@ -44,6 +50,10 @@ public class ProyectoService {
         EspacioTrabajo espacio = espacioService.buscarAccesible(
                 request.espacioId(),
                 correo);
+        if (!espacioPermisoService.puedeGestionar(espacio, correo)) {
+            throw new ForbiddenOperationException(
+                    "Solo un lider del espacio o un administrador puede crear proyectos");
+        }
         Usuario usuario = usuarioService.buscarPorCorreo(correo);
         Proyecto proyecto = new Proyecto(
                 request.nombre().trim(),
@@ -66,7 +76,7 @@ public class ProyectoService {
                 com.fisihub.model.TipoActividad.PROYECTO_CREADO,
                 usuario.getNombre() + " creo el proyecto \""
                         + guardado.getNombre() + "\"");
-        return toResponse(guardado);
+        return toResponse(guardado, correo);
     }
 
     @Transactional(readOnly = true)
@@ -75,7 +85,7 @@ public class ProyectoService {
                 .findDistinctByMiembrosUsuarioCorreoIgnoreCaseOrderByCreadoEnDesc(
                         correo)
                 .stream()
-                .map(this::toResponse)
+                .map(proyecto -> toResponse(proyecto, correo))
                 .toList();
     }
 
@@ -89,13 +99,13 @@ public class ProyectoService {
                         espacioId,
                         correo)
                 .stream()
-                .map(this::toResponse)
+                .map(proyecto -> toResponse(proyecto, correo))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ProyectoResponse obtener(Long id, String correo) {
-        return toResponse(buscarAccesible(id, correo));
+        return toResponse(buscarAccesible(id, correo), correo);
     }
 
     @Transactional
@@ -121,7 +131,7 @@ public class ProyectoService {
                 request.prioridad() == null
                         ? proyecto.getPrioridad()
                         : request.prioridad());
-        return toResponse(proyecto);
+        return toResponse(proyecto, correo);
     }
 
     @Transactional
@@ -133,13 +143,20 @@ public class ProyectoService {
 
     @Transactional(readOnly = true)
     public Proyecto buscarAccesible(Long id, String correo) {
+        if (usuarioService.esAdmin(correo)) {
+            return proyectoRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Proyecto no encontrado"));
+        }
         return proyectoRepository
                 .findDistinctByIdAndMiembrosUsuarioCorreoIgnoreCase(id, correo)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Proyecto no encontrado"));
     }
 
-    public ProyectoResponse toResponse(Proyecto proyecto) {
+    public ProyectoResponse toResponse(
+            Proyecto proyecto,
+            String correo) {
         return new ProyectoResponse(
                 proyecto.getId(),
                 proyecto.getNombre(),
@@ -154,13 +171,14 @@ public class ProyectoService {
                 proyecto.getLider().getId(),
                 proyecto.getLider().getNombre(),
                 proyecto.getMiembros().size(),
-                proyecto.getCreadoEn());
+                proyecto.getCreadoEn(),
+                permisoService.puedeGestionar(proyecto, correo));
     }
 
     private void validarLider(Proyecto proyecto, String correo) {
-        if (!proyecto.getLider().getCorreo().equalsIgnoreCase(correo)) {
+        if (!permisoService.puedeGestionar(proyecto, correo)) {
             throw new ForbiddenOperationException(
-                    "Solo el lider del proyecto puede modificarlo");
+                    "Solo un lider del proyecto o un administrador puede modificarlo");
         }
     }
 

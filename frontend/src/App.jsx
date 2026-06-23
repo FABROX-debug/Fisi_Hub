@@ -7,6 +7,7 @@ import {
   Routes,
 } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import AppLayout from './layouts/AppLayout'
 import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
@@ -19,6 +20,8 @@ import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import Tasks from './pages/Tasks'
 import Workspaces from './pages/Workspaces'
+import Notifications from './pages/Notifications'
+import Admin from './pages/Admin'
 import useAuthStore from './store/authStore'
 
 function PublicOnlyRoute() {
@@ -60,7 +63,11 @@ function AppRoutes() {
           <Route path="/kanban" element={<Kanban />} />
           <Route path="/miembros" element={<Members />} />
           <Route path="/reportes" element={<Reports />} />
+          <Route path="/notificaciones" element={<Notifications />} />
           <Route path="/configuracion" element={<Settings />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/administracion" element={<Admin />} />
+          </Route>
         </Route>
       </Route>
 

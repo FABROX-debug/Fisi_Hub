@@ -50,6 +50,9 @@ public class EspacioTrabajo {
     @OneToMany(mappedBy = "espacio", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Proyecto> proyectos = new HashSet<>();
 
+    @OneToMany(mappedBy = "espacio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<InvitacionEspacio> invitaciones = new HashSet<>();
+
     protected EspacioTrabajo() {
     }
 
@@ -84,6 +87,10 @@ public class EspacioTrabajo {
 
     public void agregarMiembro(Usuario usuario, RolEspacio rol) {
         miembros.add(new EspacioMiembro(this, usuario, rol));
+    }
+
+    public void quitarMiembro(EspacioMiembro miembro) {
+        miembros.remove(miembro);
     }
 
     public Long getId() {

@@ -64,4 +64,8 @@ public class EspacioMiembro {
     public RolEspacio getRol() {
         return rol;
     }
+
+    public void cambiarRol(RolEspacio rol) {
+        this.rol = rol;
+    }
 }

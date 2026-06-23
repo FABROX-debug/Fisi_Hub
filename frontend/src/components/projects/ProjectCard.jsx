@@ -33,24 +33,26 @@ function ProjectCard({ project, onEdit, onDelete }) {
             {project.prioridad}
           </Badge>
         </div>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            aria-label={`Editar ${project.nombre}`}
-            className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
-            onClick={() => onEdit(project)}
-          >
-            <Edit3 size={17} />
-          </button>
-          <button
-            type="button"
-            aria-label={`Eliminar ${project.nombre}`}
-            className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
-            onClick={() => onDelete(project)}
-          >
-            <Trash2 size={17} />
-          </button>
-        </div>
+        {project.puedeGestionar && (
+          <div className="flex gap-1">
+            <button
+              type="button"
+              aria-label={`Editar ${project.nombre}`}
+              className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
+              onClick={() => onEdit(project)}
+            >
+              <Edit3 size={17} />
+            </button>
+            <button
+              type="button"
+              aria-label={`Eliminar ${project.nombre}`}
+              className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
+              onClick={() => onDelete(project)}
+            >
+              <Trash2 size={17} />
+            </button>
+          </div>
+        )}
       </div>
 
       <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-accent">

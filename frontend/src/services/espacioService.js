@@ -15,3 +15,17 @@ export const deleteEspacio = (id) =>
 
 export const getProyectosByEspacio = (id) =>
   apiRequest(`/api/espacios/${id}/proyectos`)
+
+export const getWorkspaceMembers = (id) =>
+  apiRequest(`/api/espacios/${id}/miembros`)
+
+export const updateWorkspaceMemberRole = (workspaceId, userId, role) =>
+  apiRequest(`/api/espacios/${workspaceId}/miembros/${userId}/rol`, {
+    method: 'PATCH',
+    body: { rol: role },
+  })
+
+export const removeWorkspaceMember = (workspaceId, userId) =>
+  apiRequest(`/api/espacios/${workspaceId}/miembros/${userId}`, {
+    method: 'DELETE',
+  })

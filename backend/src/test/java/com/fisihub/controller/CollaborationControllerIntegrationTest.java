@@ -23,9 +23,12 @@ import com.fisihub.repository.EspacioMiembroRepository;
 import com.fisihub.repository.EspacioTrabajoRepository;
 import com.fisihub.repository.HistorialActividadRepository;
 import com.fisihub.repository.MiembroProyectoRepository;
+import com.fisihub.repository.NotificacionRepository;
 import com.fisihub.repository.ProyectoRepository;
 import com.fisihub.repository.TareaRepository;
 import com.fisihub.repository.UsuarioRepository;
+import com.fisihub.model.EspacioMiembro;
+import com.fisihub.model.RolEspacio;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,6 +43,9 @@ class CollaborationControllerIntegrationTest {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private NotificacionRepository notificacionRepository;
 
     @Autowired
     private HistorialActividadRepository historialRepository;
@@ -64,6 +70,7 @@ class CollaborationControllerIntegrationTest {
 
     @BeforeEach
     void cleanData() {
+        notificacionRepository.deleteAll();
         comentarioRepository.deleteAll();
         historialRepository.deleteAll();
         tareaRepository.deleteAll();
@@ -97,6 +104,7 @@ class CollaborationControllerIntegrationTest {
                 "Usuario Externo",
                 "collab.outsider@fisihub.local");
         long projectId = createProject(owner.token());
+        addWorkspaceMember(projectId, member.userId());
 
         mockMvc.perform(get("/api/proyectos/{id}/miembros", projectId)
                         .header("Authorization", bearer(owner.token())))
@@ -283,6 +291,15 @@ class CollaborationControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString());
         return task.get("id").asLong();
+    }
+
+    private void addWorkspaceMember(long projectId, long userId) {
+        var project = proyectoRepository.findById(projectId).orElseThrow();
+        var user = usuarioRepository.findById(userId).orElseThrow();
+        espacioMiembroRepository.saveAndFlush(new EspacioMiembro(
+                project.getEspacio(),
+                user,
+                RolEspacio.MIEMBRO));
     }
 
     private String bearer(String token) {

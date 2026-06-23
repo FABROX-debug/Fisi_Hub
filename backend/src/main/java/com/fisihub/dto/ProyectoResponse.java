@@ -20,5 +20,6 @@ public record ProyectoResponse(
         Long liderId,
         String liderNombre,
         int cantidadMiembros,
-        LocalDateTime creadoEn) {
+        LocalDateTime creadoEn,
+        boolean puedeGestionar) {
 }

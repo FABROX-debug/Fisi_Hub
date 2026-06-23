@@ -22,12 +22,15 @@ public class EspacioService {
 
     private final EspacioTrabajoRepository espacioRepository;
     private final UsuarioService usuarioService;
+    private final EspacioPermisoService permisoService;
 
     public EspacioService(
             EspacioTrabajoRepository espacioRepository,
-            UsuarioService usuarioService) {
+            UsuarioService usuarioService,
+            EspacioPermisoService permisoService) {
         this.espacioRepository = espacioRepository;
         this.usuarioService = usuarioService;
+        this.permisoService = permisoService;
     }
 
     @Transactional
@@ -40,7 +43,7 @@ public class EspacioService {
                 valorODefault(request.icono(), ICONO_DEFAULT),
                 usuario);
         espacio.agregarMiembro(usuario, RolEspacio.LIDER);
-        return toResponse(espacioRepository.save(espacio));
+        return toResponse(espacioRepository.save(espacio), correo);
     }
 
     @Transactional(readOnly = true)
@@ -49,13 +52,13 @@ public class EspacioService {
                 .findDistinctByMiembrosUsuarioCorreoIgnoreCaseOrderByCreadoEnDesc(
                         correo)
                 .stream()
-                .map(this::toResponse)
+                .map(espacio -> toResponse(espacio, correo))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public EspacioResponse obtener(Long id, String correo) {
-        return toResponse(buscarAccesible(id, correo));
+        return toResponse(buscarAccesible(id, correo), correo);
     }
 
     @Transactional
@@ -64,31 +67,38 @@ public class EspacioService {
             EspacioRequest request,
             String correo) {
         EspacioTrabajo espacio = buscarAccesible(id, correo);
-        validarCreador(espacio, correo);
+        validarGestion(espacio, correo);
         espacio.actualizar(
                 request.nombre().trim(),
                 normalizarOpcional(request.descripcion()),
                 valorODefault(request.color(), COLOR_DEFAULT),
                 valorODefault(request.icono(), ICONO_DEFAULT));
-        return toResponse(espacio);
+        return toResponse(espacio, correo);
     }
 
     @Transactional
     public void eliminar(Long id, String correo) {
         EspacioTrabajo espacio = buscarAccesible(id, correo);
-        validarCreador(espacio, correo);
+        validarGestion(espacio, correo);
         espacioRepository.delete(espacio);
     }
 
     @Transactional(readOnly = true)
     public EspacioTrabajo buscarAccesible(Long id, String correo) {
+        if (usuarioService.esAdmin(correo)) {
+            return espacioRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Espacio de trabajo no encontrado"));
+        }
         return espacioRepository
                 .findDistinctByIdAndMiembrosUsuarioCorreoIgnoreCase(id, correo)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Espacio de trabajo no encontrado"));
     }
 
-    public EspacioResponse toResponse(EspacioTrabajo espacio) {
+    public EspacioResponse toResponse(
+            EspacioTrabajo espacio,
+            String correo) {
         return new EspacioResponse(
                 espacio.getId(),
                 espacio.getNombre(),
@@ -99,13 +109,14 @@ public class EspacioService {
                 espacio.getCreadoPor().getNombre(),
                 espacio.getMiembros().size(),
                 espacio.getProyectos().size(),
-                espacio.getCreadoEn());
+                espacio.getCreadoEn(),
+                permisoService.puedeGestionar(espacio, correo));
     }
 
-    private void validarCreador(EspacioTrabajo espacio, String correo) {
-        if (!espacio.getCreadoPor().getCorreo().equalsIgnoreCase(correo)) {
+    private void validarGestion(EspacioTrabajo espacio, String correo) {
+        if (!permisoService.puedeGestionar(espacio, correo)) {
             throw new ForbiddenOperationException(
-                    "Solo el lider del espacio puede modificarlo");
+                    "Solo un lider del espacio o un administrador puede modificarlo");
         }
     }
 

@@ -38,7 +38,7 @@ function KanbanCard({
   } = useDraggable({
     id: String(task.id),
     data: { task },
-    disabled,
+    disabled: disabled || !task.puedeCambiarEstado,
   })
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
@@ -65,7 +65,7 @@ function KanbanCard({
         <button
           type="button"
           aria-label={`Arrastrar ${task.titulo}`}
-          disabled={disabled}
+          disabled={disabled || !task.puedeCambiarEstado}
           className="shrink-0 cursor-grab rounded-lg p-1.5 text-textMuted hover:bg-violet-50 hover:text-accent active:cursor-grabbing disabled:cursor-not-allowed"
           {...attributes}
           {...listeners}
@@ -98,7 +98,7 @@ function KanbanCard({
         Cambiar estado
         <select
           aria-label={`Cambiar estado de ${task.titulo}`}
-          disabled={disabled}
+          disabled={disabled || !task.puedeCambiarEstado}
           value={task.estado}
           onChange={(event) => onStatusChange(task.id, event.target.value)}
           className="mt-1.5 w-full rounded-lg border border-border bg-white px-2.5 py-2 text-xs text-textPrimary outline-none focus:border-accent focus:ring-2 focus:ring-violet-100"

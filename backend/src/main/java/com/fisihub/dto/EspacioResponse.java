@@ -12,5 +12,6 @@ public record EspacioResponse(
         String creadorNombre,
         int cantidadMiembros,
         int cantidadProyectos,
-        LocalDateTime creadoEn) {
+        LocalDateTime creadoEn,
+        boolean puedeGestionar) {
 }

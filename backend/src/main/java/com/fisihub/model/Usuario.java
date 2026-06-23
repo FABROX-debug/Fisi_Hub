@@ -63,6 +63,14 @@ public class Usuario {
         usuarioRoles.add(new UsuarioRol(this, rol));
     }
 
+    public void activar() {
+        activo = true;
+    }
+
+    public void desactivar() {
+        activo = false;
+    }
+
     public Long getId() {
         return id;
     }
@@ -91,4 +99,3 @@ public class Usuario {
         return usuarioRoles;
     }
 }
-

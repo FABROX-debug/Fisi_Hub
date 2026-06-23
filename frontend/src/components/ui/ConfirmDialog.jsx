@@ -6,6 +6,7 @@ function ConfirmDialog({
   title,
   message,
   busy,
+  confirmLabel = 'Eliminar',
   onCancel,
   onConfirm,
 }) {
@@ -17,7 +18,7 @@ function ConfirmDialog({
           Cancelar
         </Button>
         <Button variant="danger" disabled={busy} onClick={onConfirm}>
-          {busy ? 'Eliminando...' : 'Eliminar'}
+          {busy ? 'Procesando...' : confirmLabel}
         </Button>
       </div>
     </Modal>

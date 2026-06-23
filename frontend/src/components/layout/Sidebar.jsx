@@ -50,9 +50,14 @@ const navigation = [
   {
     label: 'Sistema',
     items: [
-      { label: 'Notificaciones', icon: Bell },
+      { label: 'Notificaciones', to: '/notificaciones', icon: Bell },
       { label: 'Configuracion', to: '/configuracion', icon: Settings },
-      { label: 'Administracion', icon: ShieldCheck },
+      {
+        label: 'Administracion',
+        to: '/administracion',
+        icon: ShieldCheck,
+        adminOnly: true,
+      },
     ],
   },
 ]
@@ -76,13 +81,13 @@ function Sidebar({ open, onClose }) {
         <button
           type="button"
           aria-label="Cerrar navegacion"
-          className="fixed inset-0 z-40 bg-slate-950/50 md:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-primary text-white shadow-xl transition-transform duration-200 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col bg-primary text-white shadow-xl transition-transform duration-200 lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -106,7 +111,7 @@ function Sidebar({ open, onClose }) {
           </NavLink>
           <button
             type="button"
-            className="rounded-lg p-2 text-violet-200 hover:bg-white/10 md:hidden"
+            className="rounded-lg p-2 text-violet-200 hover:bg-white/10 lg:hidden"
             aria-label="Cerrar menu"
             onClick={onClose}
           >
@@ -123,13 +128,16 @@ function Sidebar({ open, onClose }) {
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const Icon = item.icon
+                  if (item.adminOnly && !user?.roles?.includes('ADMIN')) {
+                    return null
+                  }
 
                   if (!item.to) {
                     return (
                       <span
                         key={item.label}
                         className={`${itemClasses} cursor-not-allowed border-transparent text-violet-300/60`}
-                        title="Disponible en un sprint futuro"
+                        title="Fuera del alcance del MVP"
                       >
                         <Icon size={18} strokeWidth={1.75} />
                         {item.label}

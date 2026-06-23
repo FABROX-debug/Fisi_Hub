@@ -146,7 +146,10 @@ function Register() {
 
       <p className="mt-6 text-center text-sm text-textMuted">
         Ya tienes cuenta?{' '}
-        <Link to="/login" className="font-semibold text-accent hover:underline">
+        <Link
+          to="/login"
+          className="font-semibold text-accent hover:underline"
+        >
           Inicia sesion
         </Link>
       </p>
@@ -155,4 +158,3 @@ function Register() {
 }
 
 export default Register
-

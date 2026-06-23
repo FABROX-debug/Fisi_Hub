@@ -35,6 +35,10 @@ function Projects() {
       : proyectos.filter((project) => project.estado === filter),
     [filter, proyectos],
   )
+  const manageableSpaces = useMemo(
+    () => espacios.filter((workspace) => workspace.puedeGestionar),
+    [espacios],
+  )
 
   const confirmDelete = async () => {
     try {
@@ -56,8 +60,10 @@ function Projects() {
           </p>
         </div>
         <Button
-          disabled={espacios.length === 0}
-          title={espacios.length === 0 ? 'Crea primero un espacio' : undefined}
+          disabled={manageableSpaces.length === 0}
+          title={manageableSpaces.length === 0
+            ? 'Necesitas liderar un espacio para crear proyectos'
+            : undefined}
           onClick={() => {
             setEditing(null)
             setFormOpen(true)
@@ -135,7 +141,7 @@ function Projects() {
       <ProjectFormModal
         open={formOpen}
         project={editing}
-        workspaces={espacios}
+        workspaces={manageableSpaces}
         saving={saving}
         onClose={() => setFormOpen(false)}
         onSave={saveProyecto}

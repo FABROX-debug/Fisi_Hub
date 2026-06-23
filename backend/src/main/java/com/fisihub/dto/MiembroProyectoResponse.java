@@ -8,5 +8,6 @@ public record MiembroProyectoResponse(
         String correo,
         RolProyecto rol,
         long tareasActivas,
-        boolean liderDesignado) {
+        boolean liderDesignado,
+        boolean activo) {
 }

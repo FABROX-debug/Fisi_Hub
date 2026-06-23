@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fisihub.repository.EspacioMiembroRepository;
 import com.fisihub.repository.EspacioTrabajoRepository;
 import com.fisihub.repository.MiembroProyectoRepository;
+import com.fisihub.repository.NotificacionRepository;
 import com.fisihub.repository.ProyectoRepository;
 import com.fisihub.repository.TareaRepository;
 import com.fisihub.repository.UsuarioRepository;
@@ -44,6 +45,9 @@ class DashboardControllerIntegrationTest {
     private TareaRepository tareaRepository;
 
     @Autowired
+    private NotificacionRepository notificacionRepository;
+
+    @Autowired
     private MiembroProyectoRepository miembroProyectoRepository;
 
     @Autowired
@@ -60,6 +64,7 @@ class DashboardControllerIntegrationTest {
 
     @BeforeEach
     void cleanData() {
+        notificacionRepository.deleteAll();
         tareaRepository.deleteAll();
         miembroProyectoRepository.deleteAll();
         proyectoRepository.deleteAll();

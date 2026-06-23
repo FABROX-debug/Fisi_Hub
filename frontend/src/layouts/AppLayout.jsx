@@ -13,9 +13,9 @@ function AppLayout() {
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="min-h-screen md:pl-72">
+      <div className="min-h-screen lg:pl-72">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8">
+        <main className="mx-auto w-full max-w-7xl overflow-hidden p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
@@ -24,4 +24,3 @@ function AppLayout() {
 }
 
 export default AppLayout
-

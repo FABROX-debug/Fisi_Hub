@@ -1,6 +1,7 @@
 import { Edit3, FolderOpen, Plus, Trash2, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import WorkspaceFormModal from '../components/workspaces/WorkspaceFormModal'
+import WorkspaceTeamModal from '../components/workspaces/WorkspaceTeamModal'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -21,6 +22,7 @@ function Workspaces() {
   const [editing, setEditing] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [teamWorkspace, setTeamWorkspace] = useState(null)
 
   useEffect(() => {
     loadAll()
@@ -107,23 +109,35 @@ function Workspaces() {
               <div className="flex shrink-0 gap-1">
                 <button
                   type="button"
-                  aria-label={`Editar ${workspace.nombre}`}
+                  aria-label={`Equipo de ${workspace.nombre}`}
                   className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
-                  onClick={() => {
-                    setEditing(workspace)
-                    setFormOpen(true)
-                  }}
+                  onClick={() => setTeamWorkspace(workspace)}
                 >
-                  <Edit3 size={18} />
+                  <Users size={18} />
                 </button>
-                <button
-                  type="button"
-                  aria-label={`Eliminar ${workspace.nombre}`}
-                  className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
-                  onClick={() => setDeleting(workspace)}
-                >
-                  <Trash2 size={18} />
-                </button>
+                {workspace.puedeGestionar && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`Editar ${workspace.nombre}`}
+                      className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
+                      onClick={() => {
+                        setEditing(workspace)
+                        setFormOpen(true)
+                      }}
+                    >
+                      <Edit3 size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Eliminar ${workspace.nombre}`}
+                      className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
+                      onClick={() => setDeleting(workspace)}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </>
+                )}
               </div>
             </Card>
           ))}
@@ -136,6 +150,10 @@ function Workspaces() {
         saving={saving}
         onClose={() => setFormOpen(false)}
         onSave={saveEspacio}
+      />
+      <WorkspaceTeamModal
+        workspace={teamWorkspace}
+        onClose={() => setTeamWorkspace(null)}
       />
       <ConfirmDialog
         open={Boolean(deleting)}

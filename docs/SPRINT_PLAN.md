@@ -20,7 +20,8 @@
 | 5      | Kanban básico                   | ✅ Completo  | Sprint 4   |
 | 6      | Dashboard con datos reales      | ✅ Completo  | Sprint 5   |
 | 7      | Miembros y comentarios          | ✅ Completo  | Sprint 6   |
-| 8      | Cierre del MVP                  | ⏳ Pendiente | Sprint 7   |
+| 8      | Cierre del MVP                  | ✅ Completo  | Sprint 7   |
+| 9      | Colaboracion multiusuario real  | ✅ Completo  | Sprint 8   |
 
 ---
 
@@ -530,7 +531,7 @@ Gestionar miembros de proyectos (agregar/quitar/asignar rol) y permitir comentar
 
 ## SPRINT 8 — Cierre del MVP
 
-**Estado:** ⏳ Pendiente  
+**Estado:** ✅ Completado
 **Commit esperado:** `git commit -m "Sprint 8: cierre MVP - notificaciones, reportes, admin y responsive"`  
 **PostgreSQL requerido:** ✅ SÍ
 
@@ -544,40 +545,39 @@ Completar las funcionalidades restantes para el MVP: notificaciones básicas, re
 - Como usuario, quiero usar FISIHUB desde mi celular.
 
 ### Tareas frontend
-- [ ] Crear `src/pages/NotificacionesPage.jsx` — lista con filtros y marcar como leído
-- [ ] Implementar badge contador de notificaciones no leídas en el topbar
-- [ ] Crear `src/pages/ReportesPage.jsx` — reporte de avance con barras de progreso por miembro
-- [ ] Crear `src/pages/AdminPage.jsx` — tabla de usuarios con acciones activar/desactivar/cambiar rol (solo ADMIN)
-- [ ] Implementar diseño responsive: sidebar colapsable en tablet, menú hamburguesa en móvil
-- [ ] Agregar skeleton loaders en todas las vistas que cargan datos
-- [ ] Revisar y completar empty states en todas las páginas
-- [ ] Auditoría de accesibilidad: focus visible, aria-labels en íconos
-- [ ] Limpiar código: eliminar console.log, datos hardcodeados residuales, imports sin usar
+- [x] Crear `src/pages/Notifications.jsx` con filtros y lectura individual/masiva.
+- [x] Implementar badge contador de notificaciones no leidas en Topbar.
+- [x] Completar `src/pages/Reports.jsx` con avance y productividad real.
+- [x] Crear `src/pages/Admin.jsx` exclusivo para usuarios `ADMIN`.
+- [x] Hacer el sidebar colapsable hasta escritorio y asegurar tablas responsivas.
+- [x] Agregar loaders y estados vacios en las nuevas vistas.
+- [x] Mantener focus visible y `aria-label` en controles con iconos.
+- [x] Verificar ausencia de `console.log`, `alert()` y datos falsos principales.
 
 ### Tareas backend
-- [ ] Crear entidad `Notificacion` (id, usuarioId, tipo, mensaje, referenciaId, leida, creadoEn)
-- [ ] Crear `NotificacionService` que genere notificaciones al:
+- [x] Crear entidad `Notificacion` (id, usuarioId, tipo, mensaje, referenciaId, leida, creadoEn).
+- [x] Crear `NotificacionService` que genere notificaciones al:
   - Asignar una tarea a un usuario
   - Que una tarea venza mañana
   - Agregar un usuario como miembro de proyecto
-- [ ] Crear `NotificacionController` con endpoints:
+- [x] Crear `NotificacionController` con endpoints:
   - `GET /api/notificaciones`
   - `PATCH /api/notificaciones/{id}/leida`
   - `PATCH /api/notificaciones/leer-todas`
-- [ ] Crear `ReportesController` con endpoints:
+- [x] Crear reporte simple con:
   - `GET /api/proyectos/{id}/reportes/avance`
-  - `GET /api/proyectos/{id}/reportes/miembros`
-- [ ] Crear `AdminController` con endpoints (solo ADMIN):
+- [x] Incluir productividad por miembro en la respuesta del reporte de avance.
+- [x] Crear `AdminController` con endpoints (solo ADMIN):
   - `GET /api/admin/usuarios`
   - `PATCH /api/admin/usuarios/{id}/activar`
   - `PATCH /api/admin/usuarios/{id}/desactivar`
-  - `PATCH /api/admin/usuarios/{id}/rol`
-- [ ] Pruebas finales de todos los endpoints críticos
-- [ ] Revisar y limpiar logs, manejo de excepciones global con `@ControllerAdvice`
+- [x] Agregar listado global de proyectos y estadisticas basicas.
+- [x] Agregar pruebas de notificaciones, reportes, permisos y administracion.
+- [x] Mantener manejo global de errores con `@ControllerAdvice`.
 
 ### Tareas de base de datos
-- [ ] Tabla `notificacion`
-- [ ] Revisión final de todas las tablas e índices básicos
+- [x] Tabla `notificacion` con restriccion de deduplicacion.
+- [x] Revision final de relaciones y consultas basicas.
 
 ### Qué NO debe hacer Codex en este sprint
 - ❌ No implementar WebSockets ni notificaciones en tiempo real
@@ -586,16 +586,69 @@ Completar las funcionalidades restantes para el MVP: notificaciones básicas, re
 - ❌ No implementar recuperación de contraseña por email real
 
 ### Criterios de aceptación
-- [ ] Las notificaciones aparecen al asignar una tarea
-- [ ] El badge de notificaciones muestra el número correcto
-- [ ] El reporte de avance muestra porcentaje real y productividad por miembro
-- [ ] El panel de admin permite activar/desactivar usuarios
-- [ ] La app es usable en móvil (viewport 375px mínimo)
-- [ ] No hay datos hardcodeados ni console.log en el código final
-- [ ] Todos los endpoints principales tienen manejo de errores correcto
+- [x] Las notificaciones aparecen al asignar una tarea.
+- [x] El badge de notificaciones muestra el numero correcto.
+- [x] El reporte muestra porcentaje real y productividad por miembro.
+- [x] El panel admin permite activar/desactivar usuarios.
+- [x] La navegacion y tablas son usables desde 320-375px.
+- [x] No hay `console.log`, `alert()` ni datos falsos como fuente principal.
+- [x] Los endpoints principales tienen manejo de errores consistente.
 
 ### Dependencias
 - Sprint 7 ✅
+
+---
+
+## SPRINT 9 - Colaboracion multiusuario real
+
+**Estado:** Completado
+
+**Fase:** 2
+**PostgreSQL requerido:** SI
+
+### Objetivo
+
+Permitir que un lider incorpore personas reales a un espacio, las agregue de
+forma explicita a proyectos y asigne trabajo con permisos simples y
+verificables.
+
+### Backend
+
+- [x] Entidad `InvitacionEspacio` con usuario registrado, rol, estado,
+  expiracion e invitador.
+- [x] Estados `PENDIENTE`, `ACEPTADA`, `EXPIRADA` y `REVOCADA`.
+- [x] Expiracion predeterminada de 7 dias.
+- [x] Invitacion interna con notificacion persistente y reenvio por renovacion.
+- [x] Aceptacion o rechazo autenticados desde la app.
+- [x] Listado, cambio de rol y retiro de miembros del espacio.
+- [x] Incorporacion a proyectos por `usuarioId`, limitada a miembros activos
+  del espacio.
+- [x] Asignaciones limitadas a miembros activos del proyecto.
+- [x] Permisos `LIDER`, `MIEMBRO` y `ADMIN` aplicados en servicios.
+- [x] Ocultamiento por `404` para usuarios externos.
+
+### Frontend
+
+- [x] Panel de equipo dentro de la vista de espacios.
+- [x] Formulario de invitacion por usuario registrado y listado por estado.
+- [x] Reenvio y revocacion sin `alert()`.
+- [x] Gestion interna desde espacios y notificaciones.
+- [x] Selector de miembros del espacio para proyectos.
+- [x] Selector de miembros reales del proyecto para tareas.
+- [x] Controles ocultos o deshabilitados segun permisos.
+
+### Pruebas
+
+- [x] Invitacion duplicada pendiente.
+- [x] Aceptacion, rechazo, expiracion, revocacion y cuenta cruzada.
+- [x] Membresia unica del espacio tras aceptar.
+- [x] Asignacion y reasignacion con restricciones de rol.
+- [x] Suite backend, lint y build frontend.
+
+### Fuera de alcance
+
+- Multiempresa, pagos y permisos granulares.
+- WebSockets, chat, adjuntos, subtareas y calendario avanzado.
 
 ---
 

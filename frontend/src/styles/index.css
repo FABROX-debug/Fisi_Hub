@@ -16,8 +16,15 @@
   }
 
   button,
-  input {
+  input,
+  select,
+  textarea {
     font: inherit;
+  }
+
+  img,
+  svg {
+    max-width: 100%;
   }
 
   :focus-visible {

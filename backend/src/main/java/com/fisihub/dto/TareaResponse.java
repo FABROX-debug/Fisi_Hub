@@ -20,5 +20,9 @@ public record TareaResponse(
         Long creadoPorId,
         String creadoPorNombre,
         LocalDateTime creadoEn,
-        LocalDateTime actualizadoEn) {
+        LocalDateTime actualizadoEn,
+        boolean puedeEditar,
+        boolean puedeEliminar,
+        boolean puedeReasignar,
+        boolean puedeCambiarEstado) {
 }

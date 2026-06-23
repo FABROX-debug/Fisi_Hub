@@ -27,4 +27,8 @@ public interface MiembroProyectoRepository
     boolean existsByProyectoIdAndUsuarioId(Long proyectoId, Long usuarioId);
 
     long countByProyectoIdAndRol(Long proyectoId, RolProyecto rol);
+
+    boolean existsByProyectoEspacioIdAndUsuarioId(
+            Long espacioId,
+            Long usuarioId);
 }

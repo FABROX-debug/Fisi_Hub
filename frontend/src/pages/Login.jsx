@@ -77,7 +77,10 @@ function Login() {
 
       <p className="mt-6 text-center text-sm text-textMuted">
         No tienes cuenta?{' '}
-        <Link to="/register" className="font-semibold text-accent hover:underline">
+        <Link
+          to="/register"
+          className="font-semibold text-accent hover:underline"
+        >
           Registrate
         </Link>
       </p>
@@ -86,4 +89,3 @@ function Login() {
 }
 
 export default Login
-

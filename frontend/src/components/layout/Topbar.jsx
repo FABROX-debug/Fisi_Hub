@@ -1,7 +1,8 @@
 import { Bell, LogOut, Menu, Search } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
+import useNotificationStore from '../../store/notificationStore'
 
 const sectionTitles = {
   '/': 'Inicio',
@@ -12,6 +13,8 @@ const sectionTitles = {
   '/kanban': 'Tablero Kanban',
   '/miembros': 'Miembros',
   '/reportes': 'Reportes',
+  '/notificaciones': 'Notificaciones',
+  '/administracion': 'Administracion',
   '/configuracion': 'Configuracion',
 }
 
@@ -21,6 +24,9 @@ function Topbar({ onMenuClick }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
+  const notifications = useNotificationStore((state) => state.notifications)
+  const loadNotifications = useNotificationStore((state) => state.load)
+  const clearNotifications = useNotificationStore((state) => state.clear)
   const title = sectionTitles[pathname] ?? 'FISIHUB'
   const initials = user?.nombre
     ?.split(/\s+/)
@@ -28,9 +34,15 @@ function Topbar({ onMenuClick }) {
     .map((part) => part[0])
     .join('')
     .toUpperCase() || 'FH'
+  const unread = notifications.filter((item) => !item.leida).length
+
+  useEffect(() => {
+    loadNotifications().catch(() => {})
+  }, [loadNotifications, pathname])
 
   const handleLogout = () => {
     logout()
+    clearNotifications()
     navigate('/login', { replace: true })
   }
 
@@ -39,7 +51,7 @@ function Topbar({ onMenuClick }) {
       <button
         type="button"
         aria-label="Abrir navegacion"
-        className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent md:hidden"
+        className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent lg:hidden"
         onClick={onMenuClick}
       >
         <Menu size={22} />
@@ -68,11 +80,16 @@ function Topbar({ onMenuClick }) {
       <button
         type="button"
         aria-label="Notificaciones"
-        title="Vista visual, disponible en un sprint futuro"
+        title="Ver notificaciones"
         className="relative rounded-lg p-2.5 text-textMuted hover:bg-violet-50 hover:text-accent"
+        onClick={() => navigate('/notificaciones')}
       >
         <Bell size={20} />
-        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger ring-2 ring-white" />
+        {unread > 0 && (
+          <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-white">
+            {unread > 99 ? '99+' : unread}
+          </span>
+        )}
       </button>
 
       <div className="relative">

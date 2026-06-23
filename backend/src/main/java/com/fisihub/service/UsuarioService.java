@@ -61,6 +61,13 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
+    public Usuario buscarPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuario no encontrado"));
+    }
+
+    @Transactional(readOnly = true)
     public boolean esAdmin(String correo) {
         return buscarPorCorreo(correo).getUsuarioRoles().stream()
                 .anyMatch(usuarioRol ->

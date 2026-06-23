@@ -20,6 +20,7 @@ import com.fisihub.model.Usuario;
 import com.fisihub.repository.MiembroProyectoRepository;
 import com.fisihub.repository.ProyectoRepository;
 import com.fisihub.repository.TareaRepository;
+import com.fisihub.repository.EspacioMiembroRepository;
 
 @Service
 public class MiembroProyectoService {
@@ -29,18 +30,27 @@ public class MiembroProyectoService {
     private final TareaRepository tareaRepository;
     private final UsuarioService usuarioService;
     private final HistorialActividadService historialService;
+    private final NotificacionService notificacionService;
+    private final EspacioMiembroRepository espacioMiembroRepository;
+    private final ProyectoPermisoService permisoService;
 
     public MiembroProyectoService(
             MiembroProyectoRepository miembroRepository,
             ProyectoRepository proyectoRepository,
             TareaRepository tareaRepository,
             UsuarioService usuarioService,
-            HistorialActividadService historialService) {
+            HistorialActividadService historialService,
+            NotificacionService notificacionService,
+            EspacioMiembroRepository espacioMiembroRepository,
+            ProyectoPermisoService permisoService) {
         this.miembroRepository = miembroRepository;
         this.proyectoRepository = proyectoRepository;
         this.tareaRepository = tareaRepository;
         this.usuarioService = usuarioService;
         this.historialService = historialService;
+        this.notificacionService = notificacionService;
+        this.espacioMiembroRepository = espacioMiembroRepository;
+        this.permisoService = permisoService;
     }
 
     @Transactional(readOnly = true)
@@ -64,9 +74,15 @@ public class MiembroProyectoService {
             MiembroProyectoRequest request,
             String correo) {
         Proyecto proyecto = buscarParaGestion(proyectoId, correo);
-        Usuario usuario = usuarioService.buscarPorCorreo(request.correo());
+        Usuario usuario = buscarUsuario(request);
         if (!usuario.isActivo()) {
             throw new BusinessRuleException("El usuario esta inactivo");
+        }
+        if (!espacioMiembroRepository.existsByEspacioIdAndUsuarioId(
+                proyecto.getEspacio().getId(),
+                usuario.getId())) {
+            throw new BusinessRuleException(
+                    "El usuario debe pertenecer al espacio antes de agregarse al proyecto");
         }
         if (miembroRepository.existsByProyectoIdAndUsuarioId(
                 proyectoId,
@@ -85,6 +101,7 @@ public class MiembroProyectoService {
                 TipoActividad.MIEMBRO_AGREGADO,
                 actor.getNombre() + " agrego a " + usuario.getNombre()
                         + " al proyecto");
+        notificacionService.notificarMiembroAgregado(proyecto, usuario);
         return toResponse(miembro, proyecto);
     }
 
@@ -150,14 +167,18 @@ public class MiembroProyectoService {
     }
 
     private boolean puedeGestionar(Proyecto proyecto, String correo) {
-        return proyecto.getLider().getCorreo().equalsIgnoreCase(correo)
-                || miembroRepository
-                        .findByProyectoIdAndUsuarioCorreoIgnoreCase(
-                                proyecto.getId(),
-                                correo)
-                        .map(miembro -> miembro.getRol() == RolProyecto.LIDER)
-                        .orElse(false)
-                || usuarioService.esAdmin(correo);
+        return permisoService.puedeGestionar(proyecto, correo);
+    }
+
+    private Usuario buscarUsuario(MiembroProyectoRequest request) {
+        if (request.usuarioId() != null) {
+            return usuarioService.buscarPorId(request.usuarioId());
+        }
+        if (request.correo() == null || request.correo().isBlank()) {
+            throw new BusinessRuleException(
+                    "Debes seleccionar un usuario del espacio");
+        }
+        return usuarioService.buscarPorCorreo(request.correo());
     }
 
     private MiembroProyecto buscarMiembro(Long proyectoId, Long usuarioId) {
@@ -192,6 +213,7 @@ public class MiembroProyectoService {
                 miembro.getRol(),
                 tareasActivas,
                 proyecto.getLider().getId().equals(
-                        miembro.getUsuario().getId()));
+                        miembro.getUsuario().getId()),
+                miembro.getUsuario().isActivo());
     }
 }

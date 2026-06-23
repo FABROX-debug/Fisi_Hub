@@ -55,7 +55,7 @@ function TaskRow({
           </Badge>
           <select
             aria-label={`Cambiar estado de ${task.titulo}`}
-            disabled={saving}
+            disabled={saving || !task.puedeCambiarEstado}
             value={task.estado}
             onChange={(event) => onStatusChange(task.id, event.target.value)}
             className="rounded-lg border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-accent"
@@ -84,22 +84,26 @@ function TaskRow({
           >
             <MessageSquare size={17} />
           </button>
-          <button
-            type="button"
-            aria-label={`Editar ${task.titulo}`}
-            className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
-            onClick={() => onEdit(task)}
-          >
-            <Edit3 size={17} />
-          </button>
-          <button
-            type="button"
-            aria-label={`Eliminar ${task.titulo}`}
-            className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
-            onClick={() => onDelete(task)}
-          >
-            <Trash2 size={17} />
-          </button>
+          {task.puedeEditar && (
+            <button
+              type="button"
+              aria-label={`Editar ${task.titulo}`}
+              className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
+              onClick={() => onEdit(task)}
+            >
+              <Edit3 size={17} />
+            </button>
+          )}
+          {task.puedeEliminar && (
+            <button
+              type="button"
+              aria-label={`Eliminar ${task.titulo}`}
+              className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
+              onClick={() => onDelete(task)}
+            >
+              <Trash2 size={17} />
+            </button>
+          )}
         </div>
       </td>
     </tr>

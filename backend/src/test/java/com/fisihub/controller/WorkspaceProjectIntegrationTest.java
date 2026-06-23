@@ -24,6 +24,7 @@ import com.fisihub.model.RolProyecto;
 import com.fisihub.repository.EspacioMiembroRepository;
 import com.fisihub.repository.EspacioTrabajoRepository;
 import com.fisihub.repository.MiembroProyectoRepository;
+import com.fisihub.repository.NotificacionRepository;
 import com.fisihub.repository.ProyectoRepository;
 import com.fisihub.repository.UsuarioRepository;
 
@@ -42,6 +43,9 @@ class WorkspaceProjectIntegrationTest {
     private MiembroProyectoRepository miembroProyectoRepository;
 
     @Autowired
+    private NotificacionRepository notificacionRepository;
+
+    @Autowired
     private ProyectoRepository proyectoRepository;
 
     @Autowired
@@ -55,6 +59,7 @@ class WorkspaceProjectIntegrationTest {
 
     @BeforeEach
     void cleanData() {
+        notificacionRepository.deleteAll();
         miembroProyectoRepository.deleteAll();
         proyectoRepository.deleteAll();
         espacioMiembroRepository.deleteAll();

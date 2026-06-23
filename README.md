@@ -5,11 +5,12 @@ software de forma simple, visual y directa.
 
 ## Estado del proyecto
 
-Sprint 7: colaboracion protegida mediante miembros de proyecto, comentarios
-en tareas e historial basico de actividad.
+MVP base finalizado y Fase 2 iniciada: Sprints 0 al 9 completados.
 
-Todavia no se han implementado reportes reales, notificaciones ni panel
-administrativo.
+FISIHUB incluye autenticacion, espacios, proyectos, tareas, Kanban, dashboard,
+colaboracion, notificaciones basicas, reportes simples y administracion minima.
+Sprint 9 agrega colaboracion multiusuario real mediante invitaciones por correo,
+equipos de espacio, asignaciones reales y permisos internos.
 
 ## Stack
 
@@ -53,6 +54,17 @@ administrativo.
 - Comentarios persistentes en tareas con autoria y fecha.
 - Historial de creacion de proyectos y tareas, cambios de estado, miembros
   agregados y comentarios.
+- Notificaciones persistentes por asignacion, membresia y vencimiento manana.
+- Contador de no leidas y marcado individual o masivo.
+- Reporte real de avance y productividad por miembro.
+- Panel `ADMIN` con usuarios, proyectos y estadisticas globales.
+- Sidebar colapsable y tablas con desplazamiento seguro en movil y tablet.
+- Invitaciones internas a espacios para usuarios registrados, con notificacion
+  persistente y expiracion.
+- Equipo por espacio con roles `LIDER` y `MIEMBRO`.
+- Incorporacion de miembros del espacio a proyectos mediante selector.
+- Asignacion de tareas solo a miembros activos del proyecto.
+- Permisos de tarea aplicados en backend y controles visibles del frontend.
 
 ## Rutas frontend
 
@@ -67,7 +79,9 @@ administrativo.
 | `/tareas` | Mis tareas |
 | `/kanban` | Tablero Kanban |
 | `/miembros` | Miembros y actividad por proyecto |
-| `/reportes` | Reportes |
+| `/reportes` | Reporte real por proyecto |
+| `/notificaciones` | Notificaciones persistentes |
+| `/administracion` | Panel exclusivo para `ADMIN` |
 | `/configuracion` | Configuracion |
 
 ## Requisitos
@@ -75,7 +89,7 @@ administrativo.
 - Node.js 20 o superior y npm.
 - Java JDK 17 o superior.
 - Maven 3.9 o superior.
-- PostgreSQL para las futuras funciones que usen persistencia.
+- PostgreSQL 14 o superior.
 
 ## Ejecutar el frontend
 
@@ -107,6 +121,7 @@ $env:DB_USER="postgres"
 $env:DB_PASSWORD="<tu-password-de-postgresql>"
 $env:JWT_SECRET="<secreto-aleatorio-de-al-menos-32-caracteres>"
 $env:JWT_EXPIRATION_MS="86400000"
+$env:APP_FRONTEND_URL="http://localhost:5173"
 cd backend
 mvn spring-boot:run
 ```
@@ -150,6 +165,33 @@ PostgreSQL mediante los endpoints de Sprint 4.
 Sprint 6 agrega un resumen de dashboard. Sprint 7 agrega las tablas
 `comentario` e `historial_actividad`; la actividad reciente del dashboard
 ahora se obtiene del historial persistente.
+
+Sprint 8 agrega la tabla `notificacion`. Los reportes y las estadisticas de
+administracion se calculan desde los datos existentes sin tablas auxiliares.
+
+Sprint 9 agrega la tabla `invitacion_espacio`. Las invitaciones se crean dentro
+de la app para usuarios registrados, expiran en 7 dias y se aceptan o rechazan
+desde la bandeja de notificaciones.
+
+## Colaboracion multiusuario - Sprint 9
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `POST` | `/api/espacios/{id}/invitaciones` | Invita un usuario registrado al espacio |
+| `GET` | `/api/espacios/{id}/invitaciones` | Lista invitaciones del espacio |
+| `GET` | `/api/espacios/{id}/usuarios-disponibles` | Lista usuarios invitables del espacio |
+| `POST` | `/api/invitaciones/{id}/aceptar` | Acepta la invitacion del usuario autenticado |
+| `POST` | `/api/invitaciones/{id}/rechazar` | Rechaza la invitacion del usuario autenticado |
+| `POST` | `/api/invitaciones/{id}/reenviar` | Renueva una invitacion pendiente o expirada |
+| `DELETE` | `/api/invitaciones/{id}` | Revoca una invitacion |
+| `GET` | `/api/espacios/{id}/miembros` | Lista el equipo del espacio |
+| `PATCH` | `/api/espacios/{id}/miembros/{usuarioId}/rol` | Cambia rol interno |
+| `DELETE` | `/api/espacios/{id}/miembros/{usuarioId}` | Quita un miembro |
+
+Solo un `LIDER` del espacio o un `ADMIN` gestiona equipo e invitaciones. Los
+miembros del proyecto pueden crear tareas y modificar las que tienen
+asignadas; solo un lider o administrador puede reasignar tareas ajenas,
+eliminarlas o gestionar miembros.
 
 ## Endpoints de Sprint 3
 
@@ -327,6 +369,43 @@ Invoke-RestMethod `
   -Body '{"contenido":"Revision completada"}'
 ```
 
+## Cierre del MVP - Sprint 8
+
+Todos los endpoints requieren JWT. Los endpoints `/api/admin/**` requieren
+ademas el rol global `ADMIN`.
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `GET` | `/api/notificaciones` | Lista avisos y genera vencimientos de manana |
+| `PATCH` | `/api/notificaciones/{id}/leida` | Marca un aviso como leido |
+| `PATCH` | `/api/notificaciones/leer-todas` | Marca todos como leidos |
+| `GET` | `/api/proyectos/{id}/reportes/avance` | Avance y productividad |
+| `GET` | `/api/admin/usuarios` | Lista usuarios |
+| `PATCH` | `/api/admin/usuarios/{id}/activar` | Activa un usuario |
+| `PATCH` | `/api/admin/usuarios/{id}/desactivar` | Desactiva un usuario |
+| `GET` | `/api/admin/proyectos` | Lista todos los proyectos |
+| `GET` | `/api/admin/estadisticas` | Resumen global |
+
+Las notificaciones se crean al asignar una tarea o agregar un miembro. Los
+avisos de tareas que vencen manana se materializan al consultar
+`GET /api/notificaciones`, sin WebSockets ni scheduler externo.
+
+Pruebas finales:
+
+```powershell
+cd backend
+mvn test
+mvn spring-boot:run
+```
+
+```powershell
+cd frontend
+npm install
+npm run lint
+npm run build
+npm run dev
+```
+
 ## Probar autenticacion
 
 Registro:
@@ -368,5 +447,6 @@ Invoke-RestMethod `
 | `DB_PASSWORD` | Contrasena de PostgreSQL | Sin valor por defecto |
 | `JWT_SECRET` | Clave de firma JWT, minimo 32 caracteres | Sin valor por defecto |
 | `JWT_EXPIRATION_MS` | Duracion del token en milisegundos | `86400000` |
+| `APP_FRONTEND_URL` | URL permitida para CORS del frontend | `http://localhost:5173` |
 
 No se deben versionar credenciales reales ni archivos `.env`.

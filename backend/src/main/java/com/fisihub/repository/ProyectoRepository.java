@@ -23,4 +23,7 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long> {
     Optional<Proyecto> findDistinctByIdAndMiembrosUsuarioCorreoIgnoreCase(
             Long id,
             String correo);
+
+    @EntityGraph(attributePaths = {"espacio", "lider", "miembros"})
+    List<Proyecto> findAllByOrderByCreadoEnDesc();
 }
