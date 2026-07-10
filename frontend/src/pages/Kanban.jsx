@@ -7,10 +7,12 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { Columns3 } from 'lucide-react'
+import { Columns3, ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import KanbanColumn from '../components/kanban/KanbanColumn'
 import Badge from '../components/ui/Badge'
+import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import ProgressBar from '../components/ui/ProgressBar'
 import Toast from '../components/ui/Toast'
@@ -25,6 +27,8 @@ const columns = [
 ]
 
 function Kanban() {
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const {
     tareas,
     proyectos,
@@ -49,6 +53,13 @@ function Kanban() {
   }, [loadData])
 
   useEffect(() => {
+    const queryProjectId = searchParams.get('proyectoId')
+    if (queryProjectId) {
+      setProjectId(queryProjectId)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
     if (proyectos.length === 0) {
       setProjectId('')
       return
@@ -56,8 +67,17 @@ function Kanban() {
     const projectStillExists = proyectos.some(
       (project) => String(project.id) === projectId,
     )
-    if (!projectStillExists) setProjectId(String(proyectos[0].id))
-  }, [projectId, proyectos])
+    if (!projectStillExists) {
+      const fallback = String(proyectos[0].id)
+      setProjectId(fallback)
+      setSearchParams({ proyectoId: fallback }, { replace: true })
+    }
+  }, [projectId, proyectos, setSearchParams])
+
+  useEffect(() => {
+    if (!projectId) return
+    setSearchParams({ proyectoId: projectId }, { replace: true })
+  }, [projectId, setSearchParams])
 
   const selectedProject = useMemo(
     () => proyectos.find((project) => String(project.id) === projectId),
@@ -118,10 +138,20 @@ function Kanban() {
           </select>
         </label>
         {selectedProject && (
-          <ProgressBar
-            value={selectedProject.porcentajeAvance}
-            label={`Avance de ${selectedProject.nombre}`}
-          />
+          <div className="space-y-3">
+            <ProgressBar
+              value={selectedProject.porcentajeAvance}
+              label={`Avance de ${selectedProject.nombre}`}
+            />
+            <Button
+              variant="ghost"
+              className="w-full sm:w-auto"
+              onClick={() => navigate(`/proyectos/${selectedProject.id}`)}
+            >
+              <ExternalLink size={16} />
+              Abrir centro del proyecto
+            </Button>
+          </div>
         )}
       </Card>
 

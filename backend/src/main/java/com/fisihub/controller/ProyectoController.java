@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fisihub.dto.ProyectoRequest;
+import com.fisihub.dto.ProyectoDetalleResponse;
 import com.fisihub.dto.ProyectoResponse;
 import com.fisihub.service.ProyectoService;
 
@@ -48,6 +49,13 @@ public class ProyectoController {
             @PathVariable Long id,
             Authentication authentication) {
         return proyectoService.obtener(id, authentication.getName());
+    }
+
+    @GetMapping("/{id}/detalle")
+    public ProyectoDetalleResponse obtenerDetalle(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return proyectoService.obtenerDetalle(id, authentication.getName());
     }
 
     @PutMapping("/{id}")

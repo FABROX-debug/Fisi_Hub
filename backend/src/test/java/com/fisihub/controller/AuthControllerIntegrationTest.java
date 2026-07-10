@@ -15,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fisihub.model.RolNombre;
 import com.fisihub.model.Usuario;
+import com.fisihub.repository.RecuperacionCuentaTokenRepository;
 import com.fisihub.repository.RolRepository;
 import com.fisihub.repository.UsuarioRepository;
 
@@ -48,8 +51,15 @@ class AuthControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RecuperacionCuentaTokenRepository recuperacionCuentaTokenRepository;
+
+    @MockBean
+    private JavaMailSender mailSender;
+
     @BeforeEach
     void cleanUsers() {
+        recuperacionCuentaTokenRepository.deleteAll();
         usuarioRepository.deleteAll();
     }
 
@@ -128,5 +138,84 @@ class AuthControllerIntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void forgotPasswordResetAndLoginWithNewPassword() throws Exception {
+        usuarioRepository.save(new Usuario(
+                "Fabrizio Recovery",
+                "recovery@fisihub.local",
+                passwordEncoder.encode("Original123")));
+
+        MvcResult forgotPasswordResult = mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "correo": "recovery@fisihub.local"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.previewUrl").isNotEmpty())
+                .andReturn();
+
+        JsonNode forgotPasswordJson = objectMapper.readTree(
+                forgotPasswordResult.getResponse().getContentAsString());
+        String previewUrl = forgotPasswordJson.get("previewUrl").asText();
+        String token = previewUrl.substring(previewUrl.lastIndexOf('/') + 1);
+
+        mockMvc.perform(get("/api/auth/reset-password/{token}", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.valid").value(true))
+                .andExpect(jsonPath("$.correo").value("recovery@fisihub.local"));
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "token": "%s",
+                                  "password": "Nueva1234"
+                                }
+                                """.formatted(token)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message")
+                        .value("La contrasena fue actualizada correctamente."));
+
+        Usuario updated = usuarioRepository
+                .findByCorreoIgnoreCase("recovery@fisihub.local")
+                .orElseThrow();
+        assertThat(passwordEncoder.matches("Nueva1234", updated.getPassword()))
+                .isTrue();
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "correo": "recovery@fisihub.local",
+                                  "password": "Original123"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "correo": "recovery@fisihub.local",
+                                  "password": "Nueva1234"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isNotEmpty());
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "token": "%s",
+                                  "password": "Otra1234"
+                                }
+                                """.formatted(token)))
+                .andExpect(status().isBadRequest());
     }
 }

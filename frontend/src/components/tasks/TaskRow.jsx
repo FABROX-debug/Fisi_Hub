@@ -5,6 +5,7 @@ import {
   Trash2,
   UserRound,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Badge from '../ui/Badge'
 
 const stateBadge = {
@@ -36,8 +37,19 @@ function TaskRow({
   return (
     <tr className="border-b border-border last:border-0 hover:bg-violet-50/40">
       <td className="min-w-64 px-4 py-4">
-        <p className="font-semibold">{task.titulo}</p>
-        <p className="mt-1 text-xs text-textMuted">{task.proyectoNombre}</p>
+        <Link
+          to={`/tareas/${task.id}`}
+          state={{ from: '/tareas' }}
+          className="font-semibold hover:text-accent hover:underline"
+        >
+          {task.titulo}
+        </Link>
+        <Link
+          to={`/proyectos/${task.proyectoId}`}
+          className="mt-1 inline-flex text-xs text-textMuted hover:text-accent hover:underline"
+        >
+          {task.proyectoNombre}
+        </Link>
       </td>
       <td className="px-4 py-4">
         <span className="flex items-center gap-2 text-sm text-textMuted">

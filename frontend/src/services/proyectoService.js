@@ -4,6 +4,9 @@ export const getProyectos = () => apiRequest('/api/proyectos')
 
 export const getProyecto = (id) => apiRequest(`/api/proyectos/${id}`)
 
+export const getProyectoDetalle = (id) =>
+  apiRequest(`/api/proyectos/${id}/detalle`)
+
 export const createProyecto = (payload) =>
   apiRequest('/api/proyectos', { method: 'POST', body: payload })
 

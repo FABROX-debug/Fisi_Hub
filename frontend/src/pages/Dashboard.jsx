@@ -133,6 +133,15 @@ function Dashboard() {
           Hola, {user?.nombre ?? 'Usuario'}
         </h1>
         <p className="mt-2 text-textMuted">{greetingDetail}</p>
+        {(summary.tareasParaHoy > 0 || summary.tareasVencidas > 0) && (
+          <Button
+            className="mt-4"
+            onClick={() => navigate('/mi-trabajo')}
+          >
+            Ir a mi trabajo
+            <ArrowRight size={16} />
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -180,6 +189,7 @@ function Dashboard() {
                   <DashboardProjectCard
                     key={project.id}
                     project={project}
+                    onOpen={() => navigate(`/proyectos/${project.id}`)}
                   />
                 ))}
               </div>

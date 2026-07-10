@@ -50,6 +50,10 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
     @EntityGraph(attributePaths = {"proyecto", "responsable", "creadoPor"})
     List<Tarea> findAllByOrderByCreadoEnDesc();
 
+    @EntityGraph(attributePaths = {"proyecto", "responsable", "creadoPor"})
+    List<Tarea> findByResponsableCorreoIgnoreCaseOrderByCreadoEnDesc(
+            String correo);
+
     @EntityGraph(attributePaths = {"proyecto", "responsable"})
     List<Tarea> findByResponsableIdAndFechaLimiteAndEstadoNot(
             Long responsableId,

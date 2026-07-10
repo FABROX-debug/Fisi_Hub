@@ -20,9 +20,12 @@ const formatDate = (value) => {
   }).format(new Date(`${value}T00:00:00Z`))
 }
 
-function DashboardProjectCard({ project }) {
+function DashboardProjectCard({ project, onOpen }) {
   return (
-    <article className="rounded-xl border border-border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+    <article
+      className={`rounded-xl border border-border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md ${onOpen ? 'cursor-pointer' : ''}`}
+      onClick={onOpen}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-accent">

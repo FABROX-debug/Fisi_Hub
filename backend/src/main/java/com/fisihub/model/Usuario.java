@@ -71,6 +71,10 @@ public class Usuario {
         activo = false;
     }
 
+    public void actualizarPassword(String password) {
+        this.password = password;
+    }
+
     public Long getId() {
         return id;
     }

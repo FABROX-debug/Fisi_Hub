@@ -43,10 +43,7 @@ public class ComentarioService {
     @Transactional(readOnly = true)
     public List<ComentarioResponse> listar(Long tareaId, String correo) {
         Tarea tarea = tareaService.buscarAccesible(tareaId, correo);
-        return comentarioRepository.findByTareaIdOrderByCreadoEnAsc(tareaId)
-                .stream()
-                .map(comentario -> toResponse(comentario, tarea, correo))
-                .toList();
+        return listarPorTareaAccesible(tarea, correo);
     }
 
     @Transactional
@@ -104,6 +101,16 @@ public class ComentarioService {
                 comentario.getContenido(),
                 comentario.getCreadoEn(),
                 puedeEliminar);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ComentarioResponse> listarPorTareaAccesible(
+            Tarea tarea,
+            String correo) {
+        return comentarioRepository.findByTareaIdOrderByCreadoEnAsc(tarea.getId())
+                .stream()
+                .map(comentario -> toResponse(comentario, tarea, correo))
+                .toList();
     }
 
     private boolean esLider(Proyecto proyecto, String correo) {

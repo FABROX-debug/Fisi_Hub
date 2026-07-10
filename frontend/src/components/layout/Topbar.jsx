@@ -7,15 +7,26 @@ import useNotificationStore from '../../store/notificationStore'
 const sectionTitles = {
   '/': 'Inicio',
   '/dashboard': 'Dashboard',
+  '/mi-trabajo': 'Mi trabajo',
   '/espacios': 'Espacios de trabajo',
   '/proyectos': 'Proyectos',
-  '/tareas': 'Mis Tareas',
+  '/tareas': 'Tareas',
   '/kanban': 'Tablero Kanban',
   '/miembros': 'Miembros',
   '/reportes': 'Reportes',
   '/notificaciones': 'Notificaciones',
   '/administracion': 'Administracion',
   '/configuracion': 'Configuracion',
+}
+
+const resolveSectionTitle = (pathname) => {
+  if (pathname.startsWith('/proyectos/')) {
+    return 'Centro del proyecto'
+  }
+  if (pathname.startsWith('/tareas/')) {
+    return 'Centro de tarea'
+  }
+  return sectionTitles[pathname] ?? 'FISIHUB'
 }
 
 function Topbar({ onMenuClick }) {
@@ -27,7 +38,7 @@ function Topbar({ onMenuClick }) {
   const notifications = useNotificationStore((state) => state.notifications)
   const loadNotifications = useNotificationStore((state) => state.load)
   const clearNotifications = useNotificationStore((state) => state.clear)
-  const title = sectionTitles[pathname] ?? 'FISIHUB'
+  const title = resolveSectionTitle(pathname)
   const initials = user?.nombre
     ?.split(/\s+/)
     .slice(0, 2)

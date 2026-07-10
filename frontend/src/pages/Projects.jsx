@@ -1,5 +1,6 @@
 import { FolderKanban, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ProjectCard from '../components/projects/ProjectCard'
 import ProjectFormModal from '../components/projects/ProjectFormModal'
 import Button from '../components/ui/Button'
@@ -9,6 +10,8 @@ import Toast from '../components/ui/Toast'
 import useWorkspaceStore from '../store/workspaceStore'
 
 function Projects() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const {
     espacios,
     proyectos,
@@ -28,6 +31,16 @@ function Projects() {
   useEffect(() => {
     loadAll()
   }, [loadAll])
+
+  useEffect(() => {
+    const editProjectId = location.state?.editProjectId
+    if (!editProjectId || proyectos.length === 0) return
+    const targetProject = proyectos.find((project) => project.id === editProjectId)
+    if (!targetProject) return
+    setEditing(targetProject)
+    setFormOpen(true)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate, proyectos])
 
   const visibleProjects = useMemo(
     () => filter === 'TODOS'

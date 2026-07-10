@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fisihub.dto.EstadoTareaRequest;
+import com.fisihub.dto.MiTrabajoResponse;
+import com.fisihub.dto.TareaDetalleResponse;
 import com.fisihub.dto.TareaCreateRequest;
 import com.fisihub.dto.TareaResponse;
 import com.fisihub.dto.TareaUpdateRequest;
@@ -51,6 +53,11 @@ public class TareaController {
                 responsableId);
     }
 
+    @GetMapping("/mi-trabajo")
+    public MiTrabajoResponse obtenerMiTrabajo(Authentication authentication) {
+        return tareaService.obtenerMiTrabajo(authentication.getName());
+    }
+
     @PostMapping
     public ResponseEntity<TareaResponse> crear(
             @Valid @RequestBody TareaCreateRequest request,
@@ -59,14 +66,21 @@ public class TareaController {
                 .body(tareaService.crear(request, authentication.getName()));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public TareaResponse obtener(
             @PathVariable Long id,
             Authentication authentication) {
         return tareaService.obtener(id, authentication.getName());
     }
 
-    @PutMapping("/{id}")
+    @GetMapping("/{id:\\d+}/detalle")
+    public TareaDetalleResponse obtenerDetalle(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return tareaService.obtenerDetalle(id, authentication.getName());
+    }
+
+    @PutMapping("/{id:\\d+}")
     public TareaResponse actualizar(
             @PathVariable Long id,
             @Valid @RequestBody TareaUpdateRequest request,
@@ -77,7 +91,7 @@ public class TareaController {
                 authentication.getName());
     }
 
-    @PatchMapping("/{id}/estado")
+    @PatchMapping("/{id:\\d+}/estado")
     public TareaResponse cambiarEstado(
             @PathVariable Long id,
             @Valid @RequestBody EstadoTareaRequest request,
@@ -88,7 +102,7 @@ public class TareaController {
                 authentication.getName());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public ResponseEntity<Void> eliminar(
             @PathVariable Long id,
             Authentication authentication) {

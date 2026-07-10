@@ -9,10 +9,14 @@ export function getTareas(filters = {}) {
   return apiRequest(`/api/tareas${query ? `?${query}` : ''}`)
 }
 
+export const getMiTrabajo = () => apiRequest('/api/tareas/mi-trabajo')
+
 export const getTareasByProyecto = (projectId) =>
   apiRequest(`/api/proyectos/${projectId}/tareas`)
 
 export const getTarea = (id) => apiRequest(`/api/tareas/${id}`)
+
+export const getTareaDetalle = (id) => apiRequest(`/api/tareas/${id}/detalle`)
 
 export const createTarea = (payload) =>
   apiRequest('/api/tareas', { method: 'POST', body: payload })

@@ -12,6 +12,18 @@ colaboracion, notificaciones basicas, reportes simples y administracion minima.
 Sprint 9 agrega colaboracion multiusuario real mediante invitaciones por correo,
 equipos de espacio, asignaciones reales y permisos internos.
 
+## Usuario demo local
+
+Si solo quieres abrir la app con datos cargados, usa:
+
+```text
+Correo: demo.fisihub@example.com
+Password: Demo1234
+```
+
+Ese usuario se crea automaticamente en perfiles `dev`, `local` o `default`
+cuando no existe aun. Tiene un espacio, un proyecto y tareas de ejemplo.
+
 ## Stack
 
 - Frontend: React, Vite y TailwindCSS.
@@ -28,6 +40,7 @@ equipos de espacio, asignaciones reales y permisos internos.
 - Componentes UI: `Button`, `Input`, `Card`, `Badge`, `ProgressBar` y `Toast`.
 - Barra de progreso con gradiente y shimmer violeta.
 - Dashboard con datos reales y aislamiento por usuario autenticado.
+- Bandeja personal `/mi-trabajo` con foco diario, prioridades y alertas.
 - Registro e inicio de sesion.
 - Estado de autenticacion con Zustand y token en `localStorage`.
 - Restauracion de sesion mediante `GET /api/auth/me`.
@@ -73,10 +86,13 @@ equipos de espacio, asignaciones reales y permisos internos.
 | `/` | Landing publica |
 | `/login` | Inicio de sesion |
 | `/register` | Registro |
+| `/forgot-password` | Solicitar recuperacion |
+| `/reset-password/:token` | Restablecer contrasena |
 | `/dashboard` | Dashboard real protegido |
+| `/mi-trabajo` | Bandeja personal del usuario |
 | `/espacios` | Espacios de trabajo del usuario |
 | `/proyectos` | Proyectos |
-| `/tareas` | Mis tareas |
+| `/tareas` | Vista general de tareas |
 | `/kanban` | Tablero Kanban |
 | `/miembros` | Miembros y actividad por proyecto |
 | `/reportes` | Reporte real por proyecto |
@@ -241,6 +257,7 @@ Todos requieren `Authorization: Bearer <token>`.
 | Metodo | Endpoint | Descripcion |
 | --- | --- | --- |
 | `GET` | `/api/tareas` | Lista tareas accesibles y acepta filtros |
+| `GET` | `/api/tareas/mi-trabajo` | Resume el trabajo personal del usuario |
 | `POST` | `/api/tareas` | Crea una tarea |
 | `GET` | `/api/tareas/{id}` | Obtiene el detalle de una tarea |
 | `PUT` | `/api/tareas/{id}` | Edita una tarea |
@@ -253,6 +270,14 @@ Filtros disponibles en `GET /api/tareas`:
 ```text
 estado, prioridad, proyectoId, responsableId
 ```
+
+`GET /api/tareas/mi-trabajo` devuelve:
+
+- resumen personal por estado y urgencia
+- tareas prioritarias
+- tareas asignadas
+- tareas que requieren accion
+- proyectos donde el usuario tiene carga activa
 
 Ejemplo:
 
@@ -448,5 +473,28 @@ Invoke-RestMethod `
 | `JWT_SECRET` | Clave de firma JWT, minimo 32 caracteres | Sin valor por defecto |
 | `JWT_EXPIRATION_MS` | Duracion del token en milisegundos | `86400000` |
 | `APP_FRONTEND_URL` | URL permitida para CORS del frontend | `http://localhost:5173` |
+| `PASSWORD_RESET_EXPIRATION_MINUTES` | Vigencia del enlace de recuperacion | `30` |
+| `PASSWORD_RESET_EXPOSE_LINK` | Expone `previewUrl` para probar sin SMTP | `true` |
+| `MAIL_FROM` | Remitente de correos de recuperacion | `no-reply@fisihub.local` |
+| `MAIL_HOST` | Host SMTP | Sin valor por defecto |
+| `MAIL_PORT` | Puerto SMTP | `587` |
+| `MAIL_USERNAME` | Usuario SMTP | Sin valor por defecto |
+| `MAIL_PASSWORD` | Password SMTP | Sin valor por defecto |
+| `MAIL_SMTP_AUTH` | Activa autenticacion SMTP | `false` |
+| `MAIL_STARTTLS_ENABLE` | Activa STARTTLS | `false` |
 
 No se deben versionar credenciales reales ni archivos `.env`.
+
+## Recuperacion de cuenta
+
+FISIHUB ahora expone estos endpoints publicos:
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `POST` | `/api/auth/forgot-password` | Solicita enlace de recuperacion |
+| `GET` | `/api/auth/reset-password/{token}` | Valida token de recuperacion |
+| `POST` | `/api/auth/reset-password` | Actualiza la contrasena |
+
+En local, la API devuelve `previewUrl` para abrir el flujo sin depender de
+SMTP. En un despliegue real conviene configurar
+`PASSWORD_RESET_EXPOSE_LINK=false`.

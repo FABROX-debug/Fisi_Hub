@@ -31,6 +31,24 @@ export function login(payload) {
   return request('/api/auth/login', { method: 'POST', body: payload })
 }
 
+export function forgotPassword(payload) {
+  return request('/api/auth/forgot-password', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function validateResetToken(token) {
+  return request(`/api/auth/reset-password/${token}`)
+}
+
+export function resetPassword(payload) {
+  return request('/api/auth/reset-password', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function getMe(token) {
   return request('/api/auth/me', { token })
 }
@@ -46,4 +64,3 @@ export function getStoredToken() {
 export function logout() {
   localStorage.removeItem(TOKEN_KEY)
 }
-

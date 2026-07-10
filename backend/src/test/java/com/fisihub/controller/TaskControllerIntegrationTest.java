@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fisihub.model.PrioridadTarea;
+import com.fisihub.model.Tarea;
 import com.fisihub.repository.EspacioMiembroRepository;
 import com.fisihub.repository.EspacioTrabajoRepository;
 import com.fisihub.repository.MiembroProyectoRepository;
@@ -76,6 +78,8 @@ class TaskControllerIntegrationTest {
     @Test
     void requiresJwtForTaskEndpoints() throws Exception {
         mockMvc.perform(get("/api/tareas"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/tareas/1/detalle"))
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/tareas")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -141,6 +145,21 @@ class TaskControllerIntegrationTest {
                         .header("Authorization", bearer(owner.token())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
+        mockMvc.perform(get("/api/proyectos/{id}/detalle", projectId)
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.proyecto.id").value(projectId))
+                .andExpect(jsonPath("$.resumenTareas.total").value(2))
+                .andExpect(jsonPath("$.resumenTareas.pendientes").value(2))
+                .andExpect(jsonPath("$.miembros.miembros.length()").value(1))
+                .andExpect(jsonPath("$.tareasDestacadas.length()").value(2));
+        mockMvc.perform(get("/api/tareas/{id}/detalle", firstTaskId)
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tarea.id").value(firstTaskId))
+                .andExpect(jsonPath("$.proyecto.id").value(projectId))
+                .andExpect(jsonPath("$.alertas.sinResponsable").value(false))
+                .andExpect(jsonPath("$.alertas.requiereAtencion").value(false));
         mockMvc.perform(get("/api/tareas")
                         .param("prioridad", "ALTA")
                         .param("proyectoId", String.valueOf(projectId))
@@ -225,7 +244,22 @@ class TaskControllerIntegrationTest {
                         .header("Authorization", bearer(outsider.token())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
+        mockMvc.perform(get("/api/tareas/mi-trabajo")
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resumen.pendientes").value(0))
+                .andExpect(jsonPath("$.resumen.completadas").value(2))
+                .andExpect(jsonPath("$.tareasAsignadas.length()").value(2))
+                .andExpect(jsonPath("$.tareasPrioritarias").isEmpty())
+                .andExpect(jsonPath("$.proyectosConCarga.length()").value(1))
+                .andExpect(jsonPath("$.proyectosConCarga[0].id").value(projectId));
         mockMvc.perform(get("/api/tareas/{id}", firstTaskId)
+                        .header("Authorization", bearer(outsider.token())))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/tareas/{id}/detalle", firstTaskId)
+                        .header("Authorization", bearer(outsider.token())))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/proyectos/{id}/detalle", projectId)
                         .header("Authorization", bearer(outsider.token())))
                 .andExpect(status().isNotFound());
 
@@ -239,6 +273,141 @@ class TaskControllerIntegrationTest {
                 .andExpect(status().isNoContent());
         assertProjectProgress(projectId, owner.token(), 0);
         assertThat(tareaRepository.count()).isZero();
+    }
+
+    @Test
+    void returnsPersonalWorkSummaryOrderedByUrgency() throws Exception {
+        AuthData owner = register(
+                "Responsable Flujo",
+                "task.personal@fisihub.local");
+        long projectId = createProject(owner.token());
+        String todayDate = LocalDate.now().toString();
+        String soonDate = LocalDate.now().plusDays(2).toString();
+        String laterDate = LocalDate.now().plusDays(10).toString();
+
+        JsonNode overdueTask = objectMapper.readTree(mockMvc.perform(post("/api/tareas")
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "titulo": "Tarea atrasada",
+                                  "proyectoId": %d,
+                                  "responsableId": %d,
+                                  "fechaLimite": "%s",
+                                  "prioridad": "MEDIA"
+                                }
+                                """.formatted(projectId, owner.userId(), laterDate)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString());
+
+        mockMvc.perform(post("/api/tareas")
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "titulo": "Tarea urgente",
+                                  "proyectoId": %d,
+                                  "responsableId": %d,
+                                  "fechaLimite": "%s",
+                                  "prioridad": "URGENTE"
+                                }
+                                """.formatted(projectId, owner.userId(), laterDate)))
+                .andExpect(status().isCreated());
+
+        JsonNode blockedTask = objectMapper.readTree(mockMvc.perform(
+                        post("/api/tareas")
+                                .header("Authorization", bearer(owner.token()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                          "titulo": "Tarea bloqueada",
+                                          "proyectoId": %d,
+                                          "responsableId": %d,
+                                          "fechaLimite": "%s",
+                                          "estado": "BLOQUEADA",
+                                          "prioridad": "ALTA"
+                                        }
+                                        """.formatted(projectId, owner.userId(), soonDate)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString());
+
+        mockMvc.perform(post("/api/tareas")
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "titulo": "Tarea para hoy",
+                                  "proyectoId": %d,
+                                  "responsableId": %d,
+                                  "fechaLimite": "%s"
+                                }
+                                """.formatted(projectId, owner.userId(), todayDate)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/tareas")
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "titulo": "Tarea normal",
+                                  "proyectoId": %d,
+                                  "responsableId": %d,
+                                  "fechaLimite": "%s",
+                                  "estado": "EN_PROCESO"
+                                }
+                                """.formatted(projectId, owner.userId(), laterDate)))
+                .andExpect(status().isCreated());
+
+        Tarea overdueEntity = tareaRepository.findById(overdueTask.get("id").asLong())
+                .orElseThrow();
+        overdueEntity.actualizar(
+                overdueEntity.getTitulo(),
+                overdueEntity.getDescripcion(),
+                overdueEntity.getResponsable(),
+                LocalDate.now().minusDays(3),
+                overdueEntity.getEstado(),
+                PrioridadTarea.MEDIA);
+        tareaRepository.saveAndFlush(overdueEntity);
+
+        mockMvc.perform(get("/api/tareas/mi-trabajo")
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resumen.pendientes").value(3))
+                .andExpect(jsonPath("$.resumen.enProceso").value(1))
+                .andExpect(jsonPath("$.resumen.bloqueadas").value(1))
+                .andExpect(jsonPath("$.resumen.vencidas").value(1))
+                .andExpect(jsonPath("$.resumen.paraHoy").value(1))
+                .andExpect(jsonPath("$.tareasAsignadas.length()").value(5))
+                .andExpect(jsonPath("$.tareasNecesitanAccion.length()").value(3))
+                .andExpect(jsonPath("$.tareasPrioritarias[0].titulo").value("Tarea atrasada"))
+                .andExpect(jsonPath("$.tareasPrioritarias[1].titulo").value("Tarea urgente"))
+                .andExpect(jsonPath("$.tareasPrioritarias[2].titulo").value("Tarea bloqueada"))
+                .andExpect(jsonPath("$.proyectosConCarga[0].tareasActivas").value(5));
+        mockMvc.perform(get("/api/tareas/{id}/detalle", overdueTask.get("id").asLong())
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.alertas.vencida").value(true))
+                .andExpect(jsonPath("$.alertas.sinResponsable").value(false))
+                .andExpect(jsonPath("$.alertas.requiereAtencion").value(true));
+
+        long blockedTaskId = blockedTask.get("id").asLong();
+        mockMvc.perform(patch("/api/tareas/{id}/estado", blockedTaskId)
+                        .header("Authorization", bearer(owner.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estado\":\"COMPLETADA\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/tareas/mi-trabajo")
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resumen.completadas").value(1))
+                .andExpect(jsonPath("$.resumen.bloqueadas").value(0))
+                .andExpect(jsonPath("$.tareasNecesitanAccion.length()").value(2))
+                .andExpect(jsonPath("$.proyectosConCarga[0].tareasActivas").value(4));
+        mockMvc.perform(get("/api/tareas/{id}/detalle", blockedTaskId)
+                        .header("Authorization", bearer(owner.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.alertas.bloqueada").value(false));
     }
 
     private AuthData register(String name, String email) throws Exception {

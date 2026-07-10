@@ -70,6 +70,14 @@ function Login() {
           value={form.password}
           onChange={handleChange}
         />
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            Olvide mi contrasena
+          </Link>
+        </div>
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Ingresando...' : 'Ingresar'}
         </Button>

@@ -1,5 +1,6 @@
 import { CheckSquare2, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import TaskFormModal from '../components/tasks/TaskFormModal'
 import TaskCommentsModal from '../components/tasks/TaskCommentsModal'
 import TaskRow from '../components/tasks/TaskRow'
@@ -31,10 +32,19 @@ function Tasks() {
   const [formOpen, setFormOpen] = useState(false)
   const [deleting, setDeleting] = useState(null)
   const [commentTask, setCommentTask] = useState(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  useEffect(() => {
+    setFilters({
+      estado: searchParams.get('estado') || '',
+      prioridad: searchParams.get('prioridad') || '',
+      proyectoId: searchParams.get('proyectoId') || '',
+    })
+  }, [searchParams])
 
   const visibleTasks = useMemo(
     () => tareas.filter((task) =>
@@ -46,7 +56,16 @@ function Tasks() {
   )
 
   const updateFilter = (field) => (event) => {
-    setFilters((current) => ({ ...current, [field]: event.target.value }))
+    const nextValue = event.target.value
+    setFilters((current) => {
+      const next = { ...current, [field]: nextValue }
+      const params = new URLSearchParams()
+      Object.entries(next).forEach(([key, value]) => {
+        if (value) params.set(key, value)
+      })
+      setSearchParams(params, { replace: true })
+      return next
+    })
   }
 
   const confirmDelete = async () => {

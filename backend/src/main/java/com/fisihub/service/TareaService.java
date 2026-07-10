@@ -1,12 +1,24 @@
 package com.fisihub.service;
 
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisihub.dto.EstadoTareaRequest;
+import com.fisihub.dto.ActividadResponse;
+import com.fisihub.dto.ComentarioResponse;
+import com.fisihub.dto.MiTrabajoProyectoResponse;
+import com.fisihub.dto.MiTrabajoResponse;
+import com.fisihub.dto.MiTrabajoResumenResponse;
+import com.fisihub.dto.TareaAlertasResponse;
+import com.fisihub.dto.TareaDetalleProyectoResponse;
+import com.fisihub.dto.TareaDetalleResponse;
 import com.fisihub.dto.TareaCreateRequest;
 import com.fisihub.dto.TareaResponse;
 import com.fisihub.dto.TareaUpdateRequest;
@@ -14,12 +26,15 @@ import com.fisihub.exception.BusinessRuleException;
 import com.fisihub.exception.ForbiddenOperationException;
 import com.fisihub.exception.ResourceNotFoundException;
 import com.fisihub.model.EstadoTarea;
+import com.fisihub.model.Comentario;
 import com.fisihub.model.MiembroProyecto;
 import com.fisihub.model.PrioridadTarea;
 import com.fisihub.model.Proyecto;
 import com.fisihub.model.Tarea;
 import com.fisihub.model.Usuario;
 import com.fisihub.repository.MiembroProyectoRepository;
+import com.fisihub.repository.ComentarioRepository;
+import com.fisihub.repository.ProyectoRepository;
 import com.fisihub.repository.TareaRepository;
 
 @Service
@@ -27,25 +42,31 @@ public class TareaService {
 
     private final TareaRepository tareaRepository;
     private final MiembroProyectoRepository miembroProyectoRepository;
+    private final ProyectoRepository proyectoRepository;
     private final ProyectoService proyectoService;
     private final UsuarioService usuarioService;
     private final HistorialActividadService historialService;
+    private final ComentarioRepository comentarioRepository;
     private final NotificacionService notificacionService;
     private final ProyectoPermisoService permisoService;
 
     public TareaService(
             TareaRepository tareaRepository,
             MiembroProyectoRepository miembroProyectoRepository,
+            ProyectoRepository proyectoRepository,
             ProyectoService proyectoService,
             UsuarioService usuarioService,
             HistorialActividadService historialService,
+            ComentarioRepository comentarioRepository,
             NotificacionService notificacionService,
             ProyectoPermisoService permisoService) {
         this.tareaRepository = tareaRepository;
         this.miembroProyectoRepository = miembroProyectoRepository;
+        this.proyectoRepository = proyectoRepository;
         this.proyectoService = proyectoService;
         this.usuarioService = usuarioService;
         this.historialService = historialService;
+        this.comentarioRepository = comentarioRepository;
         this.notificacionService = notificacionService;
         this.permisoService = permisoService;
     }
@@ -146,6 +167,117 @@ public class TareaService {
     @Transactional(readOnly = true)
     public TareaResponse obtener(Long id, String correo) {
         return toResponse(buscarAccesible(id, correo), correo);
+    }
+
+    @Transactional(readOnly = true)
+    public TareaDetalleResponse obtenerDetalle(Long id, String correo) {
+        Tarea tarea = buscarAccesible(id, correo);
+        LocalDate hoy = LocalDate.now();
+        List<ComentarioResponse> comentarios = comentarioRepository
+                .findByTareaIdOrderByCreadoEnAsc(tarea.getId())
+                .stream()
+                .map(comentario -> toComentarioResponse(comentario, tarea, correo))
+                .toList();
+        List<ActividadResponse> actividad = historialService
+                .listarPorProyecto(tarea.getProyecto().getId(), correo)
+                .stream()
+                .filter(item -> actividadRelacionadaConTarea(item, tarea))
+                .limit(8)
+                .toList();
+
+        return new TareaDetalleResponse(
+                toResponse(tarea, correo),
+                new TareaDetalleProyectoResponse(
+                        tarea.getProyecto().getId(),
+                        tarea.getProyecto().getNombre(),
+                        tarea.getProyecto().getEspacio().getNombre(),
+                        tarea.getProyecto().getEstado(),
+                        tarea.getProyecto().getPorcentajeAvance()),
+                comentarios,
+                actividad,
+                buildAlertas(tarea, hoy));
+    }
+
+    @Transactional(readOnly = true)
+    public MiTrabajoResponse obtenerMiTrabajo(String correo) {
+        LocalDate hoy = LocalDate.now();
+        List<Tarea> tareasAsignadas = tareaRepository
+                .findByResponsableCorreoIgnoreCaseOrderByCreadoEnDesc(correo);
+        List<Proyecto> proyectosParticipando = proyectoRepository
+                .findDistinctByMiembrosUsuarioCorreoIgnoreCaseOrderByCreadoEnDesc(
+                        correo);
+        Set<Long> proyectoIds = proyectosParticipando.stream()
+                .map(Proyecto::getId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        List<Tarea> tareasVisibles = mergeTasks(
+                tareasAsignadas,
+                tareaRepository
+                        .findDistinctByProyectoMiembrosUsuarioCorreoIgnoreCaseOrderByCreadoEnDesc(
+                                correo));
+
+        List<TareaResponse> tareasAsignadasResponse = tareasAsignadas.stream()
+                .sorted(taskPriorityComparator(hoy))
+                .map(tarea -> toResponse(tarea, correo))
+                .toList();
+
+        List<TareaResponse> tareasPrioritarias = tareasAsignadas.stream()
+                .filter(tarea -> tarea.getEstado() != EstadoTarea.COMPLETADA)
+                .sorted(taskPriorityComparator(hoy))
+                .limit(6)
+                .map(tarea -> toResponse(tarea, correo))
+                .toList();
+
+        List<TareaResponse> tareasNecesitanAccion = tareasAsignadas.stream()
+                .filter(tarea -> requiereAccion(tarea, hoy))
+                .sorted(taskPriorityComparator(hoy))
+                .map(tarea -> toResponse(tarea, correo))
+                .toList();
+
+        List<MiTrabajoProyectoResponse> proyectosConCarga = proyectosParticipando
+                .stream()
+                .map(proyecto -> new MiTrabajoProyectoResponse(
+                        proyecto.getId(),
+                        proyecto.getNombre(),
+                        proyecto.getEspacio().getNombre(),
+                        proyecto.getEstado(),
+                        proyecto.getPrioridad(),
+                        proyecto.getPorcentajeAvance(),
+                        proyecto.getFechaFin(),
+                        proyecto.getLider().getNombre(),
+                        tareasAsignadas.stream()
+                                .filter(tarea -> tarea.getProyecto().getId()
+                                        .equals(proyecto.getId()))
+                                .filter(tarea -> tarea.getEstado() != EstadoTarea.COMPLETADA)
+                                .count()))
+                .filter(proyecto -> proyecto.tareasActivas() > 0
+                        || proyectoIds.contains(proyecto.id())
+                                && tareasVisibles.stream().anyMatch(
+                                        tarea -> tarea.getProyecto().getId()
+                                                .equals(proyecto.id())))
+                .sorted(Comparator
+                        .comparingLong(MiTrabajoProyectoResponse::tareasActivas)
+                        .reversed()
+                        .thenComparing(MiTrabajoProyectoResponse::fechaFin,
+                                Comparator.nullsLast(Comparator.naturalOrder())))
+                .limit(6)
+                .toList();
+
+        MiTrabajoResumenResponse resumen = new MiTrabajoResumenResponse(
+                countByState(tareasAsignadas, EstadoTarea.PENDIENTE),
+                countByState(tareasAsignadas, EstadoTarea.EN_PROCESO),
+                countByState(tareasAsignadas, EstadoTarea.EN_REVISION),
+                countByState(tareasAsignadas, EstadoTarea.BLOQUEADA),
+                countByState(tareasAsignadas, EstadoTarea.COMPLETADA),
+                tareasAsignadas.stream().filter(tarea -> isOverdue(tarea, hoy)).count(),
+                tareasAsignadas.stream().filter(tarea -> isDueToday(tarea, hoy)).count());
+
+        return new MiTrabajoResponse(
+                resumen,
+                tareasPrioritarias,
+                tareasAsignadasResponse,
+                tareasNecesitanAccion,
+                proyectosConCarga);
     }
 
     @Transactional
@@ -310,5 +442,122 @@ public class TareaService {
 
     private String normalizarOpcional(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private List<Tarea> mergeTasks(List<Tarea> primary, List<Tarea> secondary) {
+        LinkedHashMap<Long, Tarea> merged = new LinkedHashMap<>();
+        primary.forEach(tarea -> merged.put(tarea.getId(), tarea));
+        secondary.forEach(tarea -> merged.putIfAbsent(tarea.getId(), tarea));
+        return List.copyOf(merged.values());
+    }
+
+    private long countByState(List<Tarea> tareas, EstadoTarea estado) {
+        return tareas.stream().filter(tarea -> tarea.getEstado() == estado).count();
+    }
+
+    private boolean requiereAccion(Tarea tarea, LocalDate hoy) {
+        return tarea.getEstado() == EstadoTarea.BLOQUEADA
+                || tarea.getEstado() == EstadoTarea.EN_REVISION
+                || isDueToday(tarea, hoy)
+                || isOverdue(tarea, hoy);
+    }
+
+    private boolean isDueToday(Tarea tarea, LocalDate hoy) {
+        return tarea.getFechaLimite() != null
+                && tarea.getFechaLimite().isEqual(hoy)
+                && tarea.getEstado() != EstadoTarea.COMPLETADA;
+    }
+
+    private boolean isOverdue(Tarea tarea, LocalDate hoy) {
+        return tarea.getFechaLimite() != null
+                && tarea.getFechaLimite().isBefore(hoy)
+                && tarea.getEstado() != EstadoTarea.COMPLETADA;
+    }
+
+    private Comparator<Tarea> taskPriorityComparator(LocalDate hoy) {
+        return Comparator
+                .comparingInt((Tarea tarea) -> priorityBucket(tarea, hoy))
+                .thenComparing(Tarea::getFechaLimite,
+                        Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing((Tarea tarea) -> prioridadOrden(tarea.getPrioridad()))
+                .thenComparing(Tarea::getCreadoEn, Comparator.reverseOrder());
+    }
+
+    private int priorityBucket(Tarea tarea, LocalDate hoy) {
+        if (isOverdue(tarea, hoy)) {
+            return 0;
+        }
+        if (tarea.getPrioridad() == PrioridadTarea.URGENTE) {
+            return 1;
+        }
+        if (tarea.getEstado() == EstadoTarea.BLOQUEADA) {
+            return 2;
+        }
+        if (isDueToday(tarea, hoy)) {
+            return 3;
+        }
+        if (tarea.getFechaLimite() != null
+                && tarea.getFechaLimite().isAfter(hoy)
+                && !tarea.getFechaLimite().isAfter(hoy.plusDays(3))) {
+            return 4;
+        }
+        if (tarea.getEstado() == EstadoTarea.EN_PROCESO
+                || tarea.getEstado() == EstadoTarea.PENDIENTE) {
+            return 5;
+        }
+        return 6;
+    }
+
+    private int prioridadOrden(PrioridadTarea prioridad) {
+        return switch (prioridad) {
+            case URGENTE -> 0;
+            case ALTA -> 1;
+            case MEDIA -> 2;
+            case BAJA -> 3;
+        };
+    }
+
+    private boolean actividadRelacionadaConTarea(
+            ActividadResponse actividad,
+            Tarea tarea) {
+        return actividad.descripcion().contains("\"" + tarea.getTitulo() + "\"")
+                || actividad.descripcion().contains("comento en \""
+                        + tarea.getTitulo() + "\"");
+    }
+
+    private TareaAlertasResponse buildAlertas(Tarea tarea, LocalDate hoy) {
+        boolean vencida = isOverdue(tarea, hoy);
+        boolean venceHoy = isDueToday(tarea, hoy);
+        boolean bloqueada = tarea.getEstado() == EstadoTarea.BLOQUEADA;
+        boolean sinResponsable = tarea.getResponsable() == null;
+        boolean requiereAtencion = vencida
+                || venceHoy
+                || bloqueada
+                || tarea.getEstado() == EstadoTarea.EN_REVISION
+                || sinResponsable;
+        return new TareaAlertasResponse(
+                vencida,
+                venceHoy,
+                bloqueada,
+                sinResponsable,
+                requiereAtencion);
+    }
+
+    private ComentarioResponse toComentarioResponse(
+            Comentario comentario,
+            Tarea tarea,
+            String correo) {
+        boolean puedeEliminar = comentario.getAutor().getCorreo()
+                .equalsIgnoreCase(correo)
+                || permisoService.puedeGestionar(tarea.getProyecto(), correo)
+                || usuarioService.esAdmin(correo);
+        return new ComentarioResponse(
+                comentario.getId(),
+                tarea.getId(),
+                comentario.getAutor().getId(),
+                comentario.getAutor().getNombre(),
+                comentario.getContenido(),
+                comentario.getCreadoEn(),
+                puedeEliminar);
     }
 }

@@ -1,4 +1,5 @@
 import { CalendarDays, Edit3, Trash2, Users } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import Badge from '../ui/Badge'
 import Card from '../ui/Card'
 import ProgressBar from '../ui/ProgressBar'
@@ -22,8 +23,13 @@ const formatDate = (value) => {
 }
 
 function ProjectCard({ project, onEdit, onDelete }) {
+  const navigate = useNavigate()
+
   return (
-    <Card className="flex h-full flex-col transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card
+      className="flex h-full cursor-pointer flex-col transition hover:-translate-y-0.5 hover:shadow-md"
+      onClick={() => navigate(`/proyectos/${project.id}`)}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           <Badge value={statusBadge[project.estado]}>
@@ -39,7 +45,10 @@ function ProjectCard({ project, onEdit, onDelete }) {
               type="button"
               aria-label={`Editar ${project.nombre}`}
               className="rounded-lg p-2 text-textMuted hover:bg-violet-50 hover:text-accent"
-              onClick={() => onEdit(project)}
+              onClick={(event) => {
+                event.stopPropagation()
+                onEdit(project)
+              }}
             >
               <Edit3 size={17} />
             </button>
@@ -47,7 +56,10 @@ function ProjectCard({ project, onEdit, onDelete }) {
               type="button"
               aria-label={`Eliminar ${project.nombre}`}
               className="rounded-lg p-2 text-textMuted hover:bg-red-50 hover:text-danger"
-              onClick={() => onDelete(project)}
+              onClick={(event) => {
+                event.stopPropagation()
+                onDelete(project)
+              }}
             >
               <Trash2 size={17} />
             </button>

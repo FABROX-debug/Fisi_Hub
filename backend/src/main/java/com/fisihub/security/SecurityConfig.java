@@ -1,6 +1,8 @@
 package com.fisihub.security;
 
 import java.util.List;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +34,7 @@ public class SecurityConfig {
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             RestAuthenticationEntryPoint authenticationEntryPoint,
-            @Value("${app.frontend-url:http://localhost:5173}") String frontendUrl) {
+            @Value("${app.frontend-url:http://localhost:5173,http://127.0.0.1:5173}") String frontendUrl) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.frontendUrl = frontendUrl;
@@ -54,7 +56,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/health").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/register",
-                                "/api/auth/login").permitAll()
+                                "/api/auth/login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/auth/reset-password/*").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
@@ -96,7 +102,13 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontendUrl));
+        LinkedHashSet<String> allowedOrigins = new LinkedHashSet<>(Arrays.stream(frontendUrl.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .toList());
+        allowedOrigins.add("http://localhost:5173");
+        allowedOrigins.add("http://127.0.0.1:5173");
+        configuration.setAllowedOrigins(allowedOrigins.stream().toList());
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));

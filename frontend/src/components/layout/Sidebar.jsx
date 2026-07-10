@@ -22,7 +22,7 @@ const navigation = [
     label: 'General',
     items: [
       { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-      { label: 'Mis Tareas', to: '/tareas', icon: CheckSquare2 },
+      { label: 'Mi trabajo', to: '/mi-trabajo', icon: CheckSquare2 },
       { label: 'Calendario', icon: CalendarDays },
     ],
   },
@@ -31,6 +31,7 @@ const navigation = [
     items: [
       { label: 'Espacios', to: '/espacios', icon: FolderOpen },
       { label: 'Proyectos', to: '/proyectos', icon: FolderKanban },
+      { label: 'Tareas', to: '/tareas', icon: CheckSquare2 },
       { label: 'Tablero Kanban', to: '/kanban', icon: Gauge },
     ],
   },

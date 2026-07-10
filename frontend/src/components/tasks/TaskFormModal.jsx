@@ -222,7 +222,7 @@ function TaskFormModal({
               </option>
               {assignableMembers.map((member) => (
                 <option key={member.usuarioId} value={member.usuarioId}>
-                  {member.nombre} · {member.rol}
+                  {member.nombre} - {member.rol}
                 </option>
               ))}
             </select>

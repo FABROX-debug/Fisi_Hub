@@ -4,6 +4,7 @@ import {
   GripVertical,
   UserRound,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Badge from '../ui/Badge'
 
 const stateBadge = {
@@ -58,9 +59,13 @@ function KanbanCard({
           <p className="text-xs font-semibold uppercase tracking-wide text-accent">
             {task.proyectoNombre}
           </p>
-          <h3 className="mt-1 break-words font-bold text-textPrimary">
+          <Link
+            to={`/tareas/${task.id}`}
+            state={{ from: `/kanban?proyectoId=${task.proyectoId}` }}
+            className="mt-1 block break-words font-bold text-textPrimary hover:text-accent hover:underline"
+          >
             {task.titulo}
-          </h3>
+          </Link>
         </div>
         <button
           type="button"
