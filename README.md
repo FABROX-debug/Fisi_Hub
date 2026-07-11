@@ -1,7 +1,137 @@
 # FISIHUB
 
-FISIHUB es una plataforma web para gestionar proyectos academicos y de
-software de forma simple, visual y directa.
+FISIHUB es una plataforma web colaborativa de gestion de proyectos academicos
+y de software, pensada para equipos universitarios. Permite organizar espacios
+de trabajo, crear proyectos con tareas, visualizar avance en tableros Kanban,
+colaborar con miembros mediante invitaciones y permisos, y monitorear
+productividad con reportes y dashboards en tiempo real.
+
+El stack es React + Vite + TailwindCSS en el frontend, Spring Boot con Java 17
+en el backend, y PostgreSQL como base de datos. La autenticacion se maneja con
+JWT y BCrypt.
+
+---
+
+## Inicio rapido con Docker
+
+> Solo necesitas [Docker](https://docs.docker.com/get-docker/) y
+> [Docker Compose](https://docs.docker.com/compose/install/) instalados.
+
+### 1. Clonar el repositorio
+
+```bash
+git clone <url-del-repositorio>
+cd Fisi_Hub
+```
+
+### 2. Levantar todos los servicios
+
+```bash
+docker compose up --build
+```
+
+Esto levanta tres contenedores:
+
+| Servicio | Puerto | Descripcion |
+| --- | --- | --- |
+| `fisihub_db` | 5432 | PostgreSQL 16 con la base de datos precargada |
+| `fisihub_backend` | 8080 | API Spring Boot |
+| `fisihub_frontend` | 80 | SPA React servida con Nginx |
+
+La base de datos se inicializa automaticamente con el dump
+`database/fisihub_dump.sql` en el primer arranque. Incluye esquema, datos de
+ejemplo y un usuario demo.
+
+### 3. Abrir la aplicacion
+
+- Frontend: [http://localhost](http://localhost)
+- Backend API: [http://localhost:8080/api/health](http://localhost:8080/api/health)
+
+### 4. Usuario demo
+
+```text
+Correo:   demo.fisihub@example.com
+Password: Demo1234
+```
+
+### 5. Detener los servicios
+
+```bash
+docker compose down
+```
+
+Para eliminar tambien los datos persistentes de la base de datos:
+
+```bash
+docker compose down -v
+```
+
+### Personalizar variables
+
+Edita directamente el `docker-compose.yml` o usa un archivo `.env` en la raiz:
+
+```dotenv
+POSTGRES_PASSWORD=mi-password-seguro
+JWT_SECRET=un-secreto-aleatorio-de-al-menos-32-caracteres
+```
+
+---
+
+## Desarrollo local (sin Docker)
+
+### Requisitos
+
+- Node.js 20+ y npm
+- Java JDK 17+
+- Maven 3.9+
+- PostgreSQL 14+
+
+### Base de datos
+
+Crea la base de datos e importa el dump:
+
+```bash
+createdb fisihub
+psql -d fisihub -f database/fisihub_dump.sql
+```
+
+O desde pgAdmin, crea la base `fisihub` y ejecuta el contenido del archivo SQL.
+
+### Backend
+
+```powershell
+$env:DB_HOST="localhost"
+$env:DB_PORT="5432"
+$env:DB_NAME="fisihub"
+$env:DB_USER="postgres"
+$env:DB_PASSWORD="<tu-password-de-postgresql>"
+$env:JWT_SECRET="<secreto-aleatorio-de-al-menos-32-caracteres>"
+$env:JWT_EXPIRATION_MS="86400000"
+$env:APP_FRONTEND_URL="http://localhost:5173"
+cd backend
+mvn spring-boot:run
+```
+
+El backend queda en `http://localhost:8080`.
+
+### Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Vite sirve la app en `http://localhost:5173`.
+
+Opcionalmente, copia `frontend/.env.example` a `frontend/.env` para configurar
+la URL del backend:
+
+```text
+VITE_API_URL=http://localhost:8080
+```
+
+---
 
 ## Estado del proyecto
 
@@ -11,18 +141,6 @@ FISIHUB incluye autenticacion, espacios, proyectos, tareas, Kanban, dashboard,
 colaboracion, notificaciones basicas, reportes simples y administracion minima.
 Sprint 9 agrega colaboracion multiusuario real mediante invitaciones por correo,
 equipos de espacio, asignaciones reales y permisos internos.
-
-## Usuario demo local
-
-Si solo quieres abrir la app con datos cargados, usa:
-
-```text
-Correo: demo.fisihub@example.com
-Password: Demo1234
-```
-
-Ese usuario se crea automaticamente en perfiles `dev`, `local` o `default`
-cuando no existe aun. Tiene un espacio, un proyecto y tareas de ejemplo.
 
 ## Stack
 
@@ -100,116 +218,20 @@ cuando no existe aun. Tiene un espacio, un proyecto y tareas de ejemplo.
 | `/administracion` | Panel exclusivo para `ADMIN` |
 | `/configuracion` | Configuracion |
 
-## Requisitos
+## Endpoints API
 
-- Node.js 20 o superior y npm.
-- Java JDK 17 o superior.
-- Maven 3.9 o superior.
-- PostgreSQL 14 o superior.
-
-## Ejecutar el frontend
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-Vite mostrara en la terminal la URL local, normalmente
-`http://localhost:5173`.
-
-Configura opcionalmente la URL del backend copiando el valor de
-`frontend/.env.example`:
-
-```text
-VITE_API_URL=http://localhost:8080
-```
-
-## Ejecutar el backend
-
-Configura las variables de entorno y ejecuta Spring Boot:
-
-```powershell
-$env:DB_HOST="localhost"
-$env:DB_PORT="5432"
-$env:DB_NAME="fisihub"
-$env:DB_USER="postgres"
-$env:DB_PASSWORD="<tu-password-de-postgresql>"
-$env:JWT_SECRET="<secreto-aleatorio-de-al-menos-32-caracteres>"
-$env:JWT_EXPIRATION_MS="86400000"
-$env:APP_FRONTEND_URL="http://localhost:5173"
-cd backend
-mvn spring-boot:run
-```
-
-El backend queda disponible en `http://localhost:8080`. Su endpoint temporal
-de estado es:
-
-```text
-GET http://localhost:8080/api/health
-```
-
-Tambien se puede probar desde PowerShell:
-
-```powershell
-Invoke-RestMethod http://localhost:8080/api/health
-```
-
-Respuesta esperada:
-
-```json
-{
-  "status": "FISIHUB backend funcionando"
-}
-```
-
-Durante el Sprint 3 PostgreSQL debe estar activo. Hibernate crea o actualiza
-temporalmente las tablas de usuarios, espacios, membresias y proyectos.
-
-Durante el Sprint 4 se agrega la tabla `tarea` y el avance del proyecto se
-calcula como:
-
-```text
-tareas completadas / total de tareas * 100
-```
-
-Si un proyecto no tiene tareas, su avance es `0`.
-
-Sprint 5 no agrega tablas ni endpoints. El Kanban consume tareas reales de
-PostgreSQL mediante los endpoints de Sprint 4.
-
-Sprint 6 agrega un resumen de dashboard. Sprint 7 agrega las tablas
-`comentario` e `historial_actividad`; la actividad reciente del dashboard
-ahora se obtiene del historial persistente.
-
-Sprint 8 agrega la tabla `notificacion`. Los reportes y las estadisticas de
-administracion se calculan desde los datos existentes sin tablas auxiliares.
-
-Sprint 9 agrega la tabla `invitacion_espacio`. Las invitaciones se crean dentro
-de la app para usuarios registrados, expiran en 7 dias y se aceptan o rechazan
-desde la bandeja de notificaciones.
-
-## Colaboracion multiusuario - Sprint 9
+### Autenticacion
 
 | Metodo | Endpoint | Descripcion |
 | --- | --- | --- |
-| `POST` | `/api/espacios/{id}/invitaciones` | Invita un usuario registrado al espacio |
-| `GET` | `/api/espacios/{id}/invitaciones` | Lista invitaciones del espacio |
-| `GET` | `/api/espacios/{id}/usuarios-disponibles` | Lista usuarios invitables del espacio |
-| `POST` | `/api/invitaciones/{id}/aceptar` | Acepta la invitacion del usuario autenticado |
-| `POST` | `/api/invitaciones/{id}/rechazar` | Rechaza la invitacion del usuario autenticado |
-| `POST` | `/api/invitaciones/{id}/reenviar` | Renueva una invitacion pendiente o expirada |
-| `DELETE` | `/api/invitaciones/{id}` | Revoca una invitacion |
-| `GET` | `/api/espacios/{id}/miembros` | Lista el equipo del espacio |
-| `PATCH` | `/api/espacios/{id}/miembros/{usuarioId}/rol` | Cambia rol interno |
-| `DELETE` | `/api/espacios/{id}/miembros/{usuarioId}` | Quita un miembro |
+| `POST` | `/api/auth/register` | Registro de usuario |
+| `POST` | `/api/auth/login` | Inicio de sesion, devuelve JWT |
+| `GET` | `/api/auth/me` | Usuario autenticado |
+| `POST` | `/api/auth/forgot-password` | Solicita enlace de recuperacion |
+| `GET` | `/api/auth/reset-password/{token}` | Valida token de recuperacion |
+| `POST` | `/api/auth/reset-password` | Actualiza la contrasena |
 
-Solo un `LIDER` del espacio o un `ADMIN` gestiona equipo e invitaciones. Los
-miembros del proyecto pueden crear tareas y modificar las que tienen
-asignadas; solo un lider o administrador puede reasignar tareas ajenas,
-eliminarlas o gestionar miembros.
-
-## Endpoints de Sprint 3
+### Espacios y proyectos
 
 Todos requieren `Authorization: Bearer <token>`.
 
@@ -227,135 +249,20 @@ Todos requieren `Authorization: Bearer <token>`.
 | `PUT` | `/api/proyectos/{id}` | Edita un proyecto liderado |
 | `DELETE` | `/api/proyectos/{id}` | Elimina un proyecto liderado |
 
-Ejemplo de creacion de espacio:
-
-```powershell
-$headers = @{ Authorization = "Bearer $($login.token)" }
-$espacio = Invoke-RestMethod `
-  -Method Post `
-  -Uri http://localhost:8080/api/espacios `
-  -Headers $headers `
-  -ContentType "application/json" `
-  -Body '{"nombre":"Arquitectura de Software","color":"#6D28D9"}'
-```
-
-Ejemplo de creacion de proyecto:
-
-```powershell
-Invoke-RestMethod `
-  -Method Post `
-  -Uri http://localhost:8080/api/proyectos `
-  -Headers $headers `
-  -ContentType "application/json" `
-  -Body "{`"nombre`":`"Sistema FISIHUB`",`"espacioId`":$($espacio.id),`"estado`":`"PLANIFICADO`",`"prioridad`":`"ALTA`"}"
-```
-
-## Endpoints de Sprint 4
-
-Todos requieren `Authorization: Bearer <token>`.
+### Tareas
 
 | Metodo | Endpoint | Descripcion |
 | --- | --- | --- |
-| `GET` | `/api/tareas` | Lista tareas accesibles y acepta filtros |
-| `GET` | `/api/tareas/mi-trabajo` | Resume el trabajo personal del usuario |
+| `GET` | `/api/tareas` | Lista tareas accesibles (filtros: estado, prioridad, proyectoId, responsableId) |
+| `GET` | `/api/tareas/mi-trabajo` | Resume trabajo personal |
 | `POST` | `/api/tareas` | Crea una tarea |
-| `GET` | `/api/tareas/{id}` | Obtiene el detalle de una tarea |
+| `GET` | `/api/tareas/{id}` | Detalle de una tarea |
 | `PUT` | `/api/tareas/{id}` | Edita una tarea |
-| `PATCH` | `/api/tareas/{id}/estado` | Cambia el estado |
+| `PATCH` | `/api/tareas/{id}/estado` | Cambia estado |
 | `DELETE` | `/api/tareas/{id}` | Elimina una tarea |
-| `GET` | `/api/proyectos/{id}/tareas` | Lista tareas de un proyecto |
+| `GET` | `/api/proyectos/{id}/tareas` | Tareas de un proyecto |
 
-Filtros disponibles en `GET /api/tareas`:
-
-```text
-estado, prioridad, proyectoId, responsableId
-```
-
-`GET /api/tareas/mi-trabajo` devuelve:
-
-- resumen personal por estado y urgencia
-- tareas prioritarias
-- tareas asignadas
-- tareas que requieren accion
-- proyectos donde el usuario tiene carga activa
-
-Ejemplo:
-
-```powershell
-$tarea = Invoke-RestMethod `
-  -Method Post `
-  -Uri http://localhost:8080/api/tareas `
-  -Headers $headers `
-  -ContentType "application/json" `
-  -Body "{`"titulo`":`"Implementar servicio`",`"proyectoId`":1,`"prioridad`":`"ALTA`"}"
-
-Invoke-RestMethod `
-  -Method Patch `
-  -Uri "http://localhost:8080/api/tareas/$($tarea.id)/estado" `
-  -Headers $headers `
-  -ContentType "application/json" `
-  -Body '{"estado":"COMPLETADA"}'
-```
-
-## Kanban de Sprint 5
-
-La ruta protegida `http://localhost:5173/kanban` permite:
-
-- Seleccionar uno de los proyectos accesibles.
-- Ver tareas agrupadas en cinco columnas por estado.
-- Arrastrar una tarjeta a otra columna.
-- Cambiar estado con un selector si no se usa drag and drop.
-- Ver el avance confirmado por el backend despues de cada cambio.
-
-Endpoints reutilizados:
-
-```text
-GET /api/tareas
-GET /api/proyectos
-GET /api/proyectos/{id}
-GET /api/proyectos/{id}/tareas
-PATCH /api/tareas/{id}/estado
-```
-
-Validacion local:
-
-```powershell
-cd frontend
-npm install
-npm run lint
-npm run build
-npm run dev
-```
-
-## Dashboard de Sprint 6
-
-El endpoint requiere `Authorization: Bearer <token>`:
-
-| Metodo | Endpoint | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/dashboard/resumen` | Estadisticas y listas del dashboard |
-
-Incluye:
-
-- Cantidad de proyectos activos.
-- Tareas pendientes, completadas, vencidas y para hoy.
-- Porcentaje promedio de avance de proyectos accesibles.
-- Hasta cinco proyectos activos recientes.
-- Tareas pendientes para hoy o los proximos tres dias.
-- Detalle de tareas vencidas.
-- Hasta cinco eventos recientes del historial de proyectos accesibles.
-
-Prueba manual:
-
-```powershell
-Invoke-RestMethod `
-  -Uri http://localhost:8080/api/dashboard/resumen `
-  -Headers @{ Authorization = "Bearer $($login.token)" }
-```
-
-## Colaboracion de Sprint 7
-
-Todos los endpoints requieren `Authorization: Bearer <token>`.
+### Colaboracion
 
 | Metodo | Endpoint | Descripcion |
 | --- | --- | --- |
@@ -363,103 +270,40 @@ Todos los endpoints requieren `Authorization: Bearer <token>`.
 | `POST` | `/api/proyectos/{id}/miembros` | Agrega usuario por correo |
 | `PATCH` | `/api/proyectos/{id}/miembros/{usuarioId}/rol` | Cambia rol interno |
 | `DELETE` | `/api/proyectos/{id}/miembros/{usuarioId}` | Quita un miembro |
-| `GET` | `/api/tareas/{id}/comentarios` | Lista comentarios cronologicamente |
+| `GET` | `/api/tareas/{id}/comentarios` | Lista comentarios |
 | `POST` | `/api/tareas/{id}/comentarios` | Crea un comentario |
-| `DELETE` | `/api/comentarios/{id}` | Elimina un comentario autorizado |
-| `GET` | `/api/proyectos/{id}/actividad` | Lista actividad reciente |
+| `DELETE` | `/api/comentarios/{id}` | Elimina un comentario |
+| `GET` | `/api/proyectos/{id}/actividad` | Actividad reciente |
 
-Solo un `LIDER` interno o un usuario `ADMIN` puede gestionar miembros. No se
-permiten duplicados ni dejar el proyecto sin lider. Los comentarios pueden ser
-eliminados por su autor, un lider del proyecto o un administrador.
-
-Ejemplo para agregar un miembro:
-
-```powershell
-Invoke-RestMethod `
-  -Method Post `
-  -Uri "http://localhost:8080/api/proyectos/1/miembros" `
-  -Headers $headers `
-  -ContentType "application/json" `
-  -Body '{"correo":"miembro@ejemplo.com","rol":"MIEMBRO"}'
-```
-
-Ejemplo para comentar:
-
-```powershell
-Invoke-RestMethod `
-  -Method Post `
-  -Uri "http://localhost:8080/api/tareas/1/comentarios" `
-  -Headers $headers `
-  -ContentType "application/json" `
-  -Body '{"contenido":"Revision completada"}'
-```
-
-## Cierre del MVP - Sprint 8
-
-Todos los endpoints requieren JWT. Los endpoints `/api/admin/**` requieren
-ademas el rol global `ADMIN`.
+### Invitaciones y equipo de espacio
 
 | Metodo | Endpoint | Descripcion |
 | --- | --- | --- |
-| `GET` | `/api/notificaciones` | Lista avisos y genera vencimientos de manana |
-| `PATCH` | `/api/notificaciones/{id}/leida` | Marca un aviso como leido |
-| `PATCH` | `/api/notificaciones/leer-todas` | Marca todos como leidos |
+| `POST` | `/api/espacios/{id}/invitaciones` | Invita un usuario al espacio |
+| `GET` | `/api/espacios/{id}/invitaciones` | Lista invitaciones del espacio |
+| `GET` | `/api/espacios/{id}/usuarios-disponibles` | Usuarios invitables |
+| `POST` | `/api/invitaciones/{id}/aceptar` | Acepta la invitacion |
+| `POST` | `/api/invitaciones/{id}/rechazar` | Rechaza la invitacion |
+| `POST` | `/api/invitaciones/{id}/reenviar` | Renueva una invitacion |
+| `DELETE` | `/api/invitaciones/{id}` | Revoca una invitacion |
+| `GET` | `/api/espacios/{id}/miembros` | Equipo del espacio |
+| `PATCH` | `/api/espacios/{id}/miembros/{usuarioId}/rol` | Cambia rol |
+| `DELETE` | `/api/espacios/{id}/miembros/{usuarioId}` | Quita un miembro |
+
+### Dashboard, notificaciones, reportes y admin
+
+| Metodo | Endpoint | Descripcion |
+| --- | --- | --- |
+| `GET` | `/api/dashboard/resumen` | Estadisticas del dashboard |
+| `GET` | `/api/notificaciones` | Lista notificaciones |
+| `PATCH` | `/api/notificaciones/{id}/leida` | Marca como leida |
+| `PATCH` | `/api/notificaciones/leer-todas` | Marca todas como leidas |
 | `GET` | `/api/proyectos/{id}/reportes/avance` | Avance y productividad |
-| `GET` | `/api/admin/usuarios` | Lista usuarios |
-| `PATCH` | `/api/admin/usuarios/{id}/activar` | Activa un usuario |
-| `PATCH` | `/api/admin/usuarios/{id}/desactivar` | Desactiva un usuario |
-| `GET` | `/api/admin/proyectos` | Lista todos los proyectos |
-| `GET` | `/api/admin/estadisticas` | Resumen global |
-
-Las notificaciones se crean al asignar una tarea o agregar un miembro. Los
-avisos de tareas que vencen manana se materializan al consultar
-`GET /api/notificaciones`, sin WebSockets ni scheduler externo.
-
-Pruebas finales:
-
-```powershell
-cd backend
-mvn test
-mvn spring-boot:run
-```
-
-```powershell
-cd frontend
-npm install
-npm run lint
-npm run build
-npm run dev
-```
-
-## Probar autenticacion
-
-Registro:
-
-```powershell
-$register = Invoke-RestMethod `
-  -Method Post `
-  -Uri http://localhost:8080/api/auth/register `
-  -ContentType "application/json" `
-  -Body '{"nombre":"Fabrizio","correo":"fab@test.com","password":"Test1234"}'
-```
-
-Login:
-
-```powershell
-$login = Invoke-RestMethod `
-  -Method Post `
-  -Uri http://localhost:8080/api/auth/login `
-  -ContentType "application/json" `
-  -Body '{"correo":"fab@test.com","password":"Test1234"}'
-```
-
-Usuario autenticado:
-
-```powershell
-Invoke-RestMethod `
-  -Uri http://localhost:8080/api/auth/me `
-  -Headers @{ Authorization = "Bearer $($login.token)" }
-```
+| `GET` | `/api/admin/usuarios` | Lista usuarios (ADMIN) |
+| `PATCH` | `/api/admin/usuarios/{id}/activar` | Activa usuario |
+| `PATCH` | `/api/admin/usuarios/{id}/desactivar` | Desactiva usuario |
+| `GET` | `/api/admin/proyectos` | Lista todos los proyectos (ADMIN) |
+| `GET` | `/api/admin/estadisticas` | Resumen global (ADMIN) |
 
 ## Variables de entorno
 
@@ -484,17 +328,3 @@ Invoke-RestMethod `
 | `MAIL_STARTTLS_ENABLE` | Activa STARTTLS | `false` |
 
 No se deben versionar credenciales reales ni archivos `.env`.
-
-## Recuperacion de cuenta
-
-FISIHUB ahora expone estos endpoints publicos:
-
-| Metodo | Endpoint | Descripcion |
-| --- | --- | --- |
-| `POST` | `/api/auth/forgot-password` | Solicita enlace de recuperacion |
-| `GET` | `/api/auth/reset-password/{token}` | Valida token de recuperacion |
-| `POST` | `/api/auth/reset-password` | Actualiza la contrasena |
-
-En local, la API devuelve `previewUrl` para abrir el flujo sin depender de
-SMTP. En un despliegue real conviene configurar
-`PASSWORD_RESET_EXPOSE_LINK=false`.
